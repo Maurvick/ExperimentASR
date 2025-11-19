@@ -1,7 +1,9 @@
-﻿using System;
+﻿using ExperimentASR.Models;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
+using System.Text.Json;
 
 namespace ExperimentASR.Services
 {
@@ -16,13 +18,12 @@ namespace ExperimentASR.Services
             _scriptPath = scriptPath;
         }
 
-        public string Transcribe(string audioPath)
+        public TranscriptResult Transcribe(string audioPath)
         {
             if (!File.Exists(audioPath))
             {
                 throw new FileNotFoundException("Audio file not found.", audioPath);
             }
-
             if (!File.Exists(_scriptPath))
             {
                 throw new FileNotFoundException("asr.py not found.", _scriptPath);
@@ -39,15 +40,47 @@ namespace ExperimentASR.Services
             };
             using (var process = new System.Diagnostics.Process { StartInfo = processStartInfo })
             {
-                process.Start();
-                var output = process.StandardOutput.ReadToEnd();
-                var error = process.StandardError.ReadToEnd();
-                process.WaitForExit();
-                if (process.ExitCode != 0)
+                try
                 {
-                    throw new Exception($"Error during transcription: {error}");
+                    process.Start();
+                    var output = process.StandardOutput.ReadToEnd();
+                    var error = process.StandardError.ReadToEnd();
+                    process.WaitForExit();
+
+                    // If Python printed JSON, parse it
+                    if (!string.IsNullOrWhiteSpace(output))
+                    {
+                        try
+                        {
+                            return JsonSerializer.Deserialize<TranscriptResult>(output);
+                        }
+                        catch
+                        {
+                            // If Python printed non-JSON, wrap it
+                            return new TranscriptResult
+                            {
+                                Status = "error",
+                                Message = "Invalid JSON from script:\n" + output
+                            };
+                        }
+                    }
+
+                    // Python may have crashed before printing JSON
+                    return new TranscriptResult
+                    {
+                        Status = "error",
+                        Message = "Python error:\n" + error
+                    };
+
                 }
-                return output.Trim();
+                catch (Exception ex)
+                {
+                    return new TranscriptResult
+                    {
+                        Status = "error",
+                        Message = "Failed to start Python process: " + ex.Message
+                    };
+                }
             }
         }
     }

@@ -1,4 +1,5 @@
-﻿using Microsoft.Win32;
+﻿using ExperimentASR.Services;
+using Microsoft.Win32;
 using System.Text;
 using System.Windows;
 using System.Windows.Controls;
@@ -17,6 +18,8 @@ namespace ExperimentASR
     /// </summary>
     public partial class MainWindow : Window
     {
+        private Transcriber _transcriber = new Transcriber();
+
         public MainWindow()
         {
             InitializeComponent();
@@ -46,7 +49,7 @@ namespace ExperimentASR
             // запуск розпізнавання у окремому потоці
             var result = await Task.Run(() => _transcriber.Transcribe(file));
 
-            OutputBox.Text = result;
+            OutputBox.Text = result.Message;
         }
     }
 }

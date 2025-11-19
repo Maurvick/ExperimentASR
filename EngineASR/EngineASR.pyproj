@@ -2,15 +2,15 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <SchemaVersion>2.0</SchemaVersion>
-    <ProjectGuid>32051f24-bc5e-46a5-9687-541d9990191f</ProjectGuid>
+    <ProjectGuid>b3deeee4-8349-4abc-9d97-705a4a2daa4d</ProjectGuid>
     <ProjectHome>.</ProjectHome>
-    <StartupFile>asr.py</StartupFile>
+    <StartupFile>EngineASR.py</StartupFile>
     <SearchPath>
     </SearchPath>
     <WorkingDirectory>.</WorkingDirectory>
     <OutputPath>.</OutputPath>
-    <Name>ASR.Core</Name>
-    <RootNamespace>ASR.Core</RootNamespace>
+    <Name>EngineASR</Name>
+    <RootNamespace>EngineASR</RootNamespace>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
     <DebugSymbols>true</DebugSymbols>
@@ -21,7 +21,10 @@
     <EnableUnmanagedDebugging>false</EnableUnmanagedDebugging>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="asr.py" />
+    <Compile Include="EngineASR.py" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="README.md" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\Python Tools\Microsoft.PythonTools.targets" />
   <!-- Uncomment the CoreCompile target to enable the Build command in
