@@ -46,9 +46,7 @@ namespace ExperimentASR
             }
 
             OutputBox.Text = "Зачекайте, аналіз триває...";
-            lblTranscriptStatus.Content = "Working...";
-            lblTranscriptStatus.Foreground = Brushes.Orange;
-
+            blockStatus.Text = "Working...";
 
             try
             {
