@@ -28,9 +28,6 @@ whisper_model = {
 }
 
 
-
-
-
 def transcribe_deepspeech(file_path):
     # Initialize model (calls DS_CreateModel internally)
     model = Model('deepspeech-0.9.3-models.pbmm')

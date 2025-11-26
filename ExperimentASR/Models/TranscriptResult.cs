@@ -1,5 +1,4 @@
-﻿
-namespace ExperimentASR.Models
+﻿namespace ExperimentASR.Models
 {
     public class TranscriptResult
     {

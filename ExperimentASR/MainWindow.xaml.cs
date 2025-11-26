@@ -19,11 +19,19 @@ namespace ExperimentASR
     /// </summary>
     public partial class MainWindow : Window
     {
-        private Transcriber _transcriber = new Transcriber();
+        private TranscribeService transcribeSerivce = new TranscribeService();
 
         public MainWindow()
         {
             InitializeComponent();
+            if (File.Exists(transcribeSerivce.AsrEngineLocation))
+            {
+                textAsrLocation.Text = "ASR Engine Location found: " + transcribeSerivce.AsrEngineLocation;
+            }
+            else
+            {
+                textAsrLocation.Text = "ASR Engine Location not found.";
+            }
         }
 
         private void SelectFile_Click(object sender, RoutedEventArgs e)
@@ -41,22 +49,22 @@ namespace ExperimentASR
 
             if (string.IsNullOrWhiteSpace(file))
             {
-                MessageBox.Show("Спочатку оберіть аудіо.");
+                MessageBox.Show("Select audio file first.");
                 return;
             }
 
-            OutputBox.Text = "Зачекайте, аналіз триває...";
+            OutputBox.Text = "Please wait, analizing file...";
             blockStatus.Text = "Working...";
 
             try
             {
                 // запуск розпізнавання у окремому потоці
-                var result = await Task.Run(() => _transcriber.Transcribe(file));
+                var result = await Task.Run(() => transcribeSerivce.Transcribe(file));
 
                 if (result == null)
                 {
-                    var msg = "Результат відсутній.";
-                    MessageBox.Show(msg, "Помилка", MessageBoxButton.OK, MessageBoxImage.Error);
+                    var msg = "No transcript received.";
+                    MessageBox.Show(msg, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                     OutputBox.Text = msg;
                     return;
                 }
@@ -69,7 +77,7 @@ namespace ExperimentASR
                 {
                     // If Transcriber sets Message on failure, show it; otherwise show fallback
                     var msg = result.Message ?? "Під час розпізнавання сталася помилка.";
-                    MessageBox.Show(msg, "Помилка", MessageBoxButton.OK, MessageBoxImage.Error);
+                    MessageBox.Show(msg, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                     OutputBox.Text = msg;
                 }
             }
@@ -77,26 +85,31 @@ namespace ExperimentASR
             {
                 // e.g. audio file not found
                 var msg = $"Файл не знайдено: {fnfEx.Message}";
-                MessageBox.Show(msg, "Файл не знайдено", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show(msg, "File not found", MessageBoxButton.OK, MessageBoxImage.Error);
                 OutputBox.Text = msg;
             }
             catch (System.ComponentModel.Win32Exception winEx)
             {
                 // e.g. python executable not found or cannot be started
                 var msg = $"Не вдалося запустити зовнішню програму: {winEx.Message}";
-                MessageBox.Show(msg, "Помилка запуску", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show(msg, "Start error", MessageBoxButton.OK, MessageBoxImage.Error);
                 OutputBox.Text = msg;
             }
             catch (Exception ex)
             {
                 // Generic fallback
                 var msg = $"Помилка під час розпізнавання: {ex.Message}";
-                MessageBox.Show(msg, "Помилка", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show(msg, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                 OutputBox.Text = msg;
             }
         }
 
         private void btnCancelTranscribe_Click(object sender, RoutedEventArgs e)
+        {
+
+        }
+
+        private void DataGrid_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
 
         }
