@@ -1,4 +1,4 @@
-from deepspeech import Model
+from google.cloud import speech
 
 def transcribe_google(audio_file_path):
     client = speech.SpeechClient()

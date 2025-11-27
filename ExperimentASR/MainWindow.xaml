@@ -34,19 +34,32 @@
 
     <DockPanel LastChildFill="True">
 
-        <StatusBar DockPanel.Dock="Bottom">
-            <StatusBarItem>
-                <TextBlock x:Name="blockStatus" Text="Ready" />
-            </StatusBarItem>
-            <Separator />
-            <StatusBarItem>
-                <ProgressBar x:Name="progressTranscript" Height="10" Width="100"/>
-            </StatusBarItem>
-            <StatusBarItem HorizontalAlignment="Right">
-                <TextBlock x:Name="textAsrLocation" Text="ASR path"/>
-            </StatusBarItem>
+        <StatusBar DockPanel.Dock="Bottom" VerticalAlignment="Bottom">
+            <StatusBarItem HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
 
+                    <StackPanel Grid.Column="0" Orientation="Horizontal">
+                        <TextBlock x:Name="blockStatus" Text="Ready" VerticalAlignment="Center"/>
 
+                        <Border Width="1" Background="#FFCCCCCC" Margin="10,2"/>
+
+                        <ProgressBar x:Name="progressTranscript" Height="10" Width="100" VerticalAlignment="Center"/>
+                    </StackPanel>
+
+                    <StackPanel Grid.Column="2" Orientation="Horizontal" HorizontalAlignment="Right">
+                        <TextBlock x:Name="textAsrLocation" Text="ASR path" VerticalAlignment="Center"/>
+
+                        <Border Width="1" Background="#FFCCCCCC" Margin="10,2"/>
+
+                        <TextBlock x:Name="txtGPUAcceleration" Text="GPUAcceleration" VerticalAlignment="Center"/>
+                    </StackPanel>
+                </Grid>
+            </StatusBarItem>
         </StatusBar>
 
         <Menu DockPanel.Dock="Top">
@@ -72,7 +85,7 @@
 
                     <Border Grid.Column="0" BorderBrush="Gray" BorderThickness="1"
                             CornerRadius="8" Padding="16" Margin="0,0,10,0">
-                        <StackPanel VerticalAlignment="Center" Height="536">
+                        <StackPanel x:Name="panelTranscriptOptions" VerticalAlignment="Center" Height="536">
 
                             <Button x:Name="btnStartTranscribe" Height="120" Width="120" Margin="0,10,0,0"
                                     Style="{StaticResource RoundButtonStyle}"
@@ -81,19 +94,19 @@
                                     Content="▶" 
                                     Click="Transcribe_Click"/>
 
-                            <TextBlock Text="Start transcription" 
+                            <TextBlock x:Name="blockStartTranscription" Text="Start transcription" 
                                        HorizontalAlignment="Center" FontSize="16" Margin="0,10,0,10"/>
 
-                            <TextBlock 
-                                       Margin="0,10,0,5"/>
+                            <TextBlock x:Name="blockImportLocalFile" 
+                                       Margin="0,10,0,5" Text="Import local file"/>
 
                             <Grid>
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="*"/>
                                     <ColumnDefinition Width="Auto"/>
                                 </Grid.ColumnDefinitions>
-                                <TextBox x:Name="AudioPath" IsReadOnly="True" VerticalContentAlignment="Center"/>
-                                <Button Grid.Column="1" Content="📁" Width="40" Margin="5,0,0,0" Click="SelectFile_Click"/>
+                                <TextBox x:Name="txtAudioFilePath" IsReadOnly="True" VerticalContentAlignment="Center"/>
+                                <Button x:Name="btnFileSelect" Grid.Column="1" Content="📁" Width="40" Margin="5,0,0,0" Click="SelectFile_Click"/>
                             </Grid>
 
 
@@ -102,13 +115,13 @@
 
                             <Separator Margin="0,20"/>
 
-                            <TextBlock Text="ASR Model" FontWeight="SemiBold"/>
-                            <ComboBox SelectedIndex="0" Margin="0,5,0,0">
+                            <TextBlock x:Name="blockAsrModel" Text="ASR Model" FontWeight="SemiBold"/>
+                            <ComboBox x:Name="comboModelSelect" SelectedIndex="0" Margin="0,5,0,0">
                                 <ComboBoxItem Content="Whisper"/>
                                 <ComboBoxItem Content="Google Speech-To-Text"/>
                                 <ComboBoxItem Content="Deepspeech"/>
                             </ComboBox>
-                            <TextBlock Text="Model Size" Margin="0,10,0,0" FontWeight="SemiBold"/>
+                            <TextBlock x:Name="blockModelSize" Text="Model Size" Margin="0,10,0,0" FontWeight="SemiBold"/>
                             <RadioButton x:Name="radioWhisperTiny" Content="Tiny" IsChecked="True"/>
                             <RadioButton x:Name="radioWhisperBase" Content="Base"/>
                             <RadioButton x:Name="radioWhisperSmall" Content="Small"/>
@@ -116,7 +129,7 @@
                         </StackPanel>
                     </Border>
 
-                    <Border Grid.Column="1" BorderBrush="Gray" BorderThickness="1"
+                    <Border x:Name="borderTranscriptOutput" Grid.Column="1" BorderBrush="Gray" BorderThickness="1"
                             CornerRadius="8" Padding="20" Margin="5,0">
                         <Grid>
                             <Grid.RowDefinitions>
@@ -125,7 +138,7 @@
                             </Grid.RowDefinitions>
 
                             <ScrollViewer VerticalScrollBarVisibility="Auto">
-                                <TextBox x:Name="OutputBox" 
+                                <TextBox x:Name="boxTranscriptOutput" 
                                          TextWrapping="Wrap" AcceptsReturn="True"
                                          FontSize="18" 
                                          Background="Transparent"
@@ -134,9 +147,9 @@
                             </ScrollViewer>
 
                             <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,10,0,0">
-                                <Button Content="Copy" Margin="0,0,5,0"/>
-                                <Button Content="Save TXT" Margin="0,0,5,0"/>
-                                <Button Content="Save SRT"/>
+                                <Button x:Name="btnCopy" Content="Copy" Margin="0,0,5,0" Click="btnCopy_Click"/>
+                                <Button x:Name="btnSaveTxt" Content="Save TXT" Margin="0,0,5,0" Click="btnSaveTxt_Click"/>
+                                <Button x:Name="btnSaveSrt" Content="Save SRT" Click="btnSaveSrt_Click"/>
                             </StackPanel>
                         </Grid>
                     </Border>
@@ -144,19 +157,19 @@
                     <Border Grid.Column="2" BorderBrush="Gray" BorderThickness="1"
                             CornerRadius="8" Padding="16" Margin="10,0,0,0">
                         <StackPanel>
-                            <TextBlock Text="Waveform" FontWeight="SemiBold" Margin="0,0,0,10"/>
+                            <TextBlock x:Name="blockWaveform" Text="Waveform" FontWeight="SemiBold" Margin="0,0,0,10"/>
 
                             <Border Height="120" 
                                     CornerRadius="8">
-                                <TextBlock Text="Waveform Visualizer" 
+                                <TextBlock x:Name="blockWaveformVisualizer" Text="Waveform Visualizer" 
                                            HorizontalAlignment="Center" VerticalAlignment="Center"/>
                             </Border>
 
-                            <TextBlock Text="Timer:" Margin="0,20,0,0"/>
-                            <TextBlock Text="00:00:00" FontSize="24" FontWeight="Bold" Foreground="{StaticResource AccentBrush}"/>
+                            <TextBlock x:Name="blockTimer" Text="Timer:" Margin="0,20,0,0"/>
+                            <TextBlock x:Name="blockTime" Text="00:00:00" FontSize="24" FontWeight="Bold" Foreground="{StaticResource AccentBrush}"/>
 
-                            <TextBlock Text="Accuracy (WER):" Margin="0,20,0,0"/>
-                            <TextBlock Text="-- %" FontSize="20" Foreground="#4CAF50"/>
+                            <TextBlock x:Name="blockAccuracyWer" Text="Accuracy (WER):" Margin="0,20,0,0"/>
+                            <TextBlock x:Name="blockAccuracyPercent" Text="-- %" FontSize="20" Foreground="#4CAF50"/>
                         </StackPanel>
                     </Border>
                 </Grid>

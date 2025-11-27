@@ -14,16 +14,21 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Update="asr_engine.py">
+    <None Update="appsettings.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Update="download_audio.py">
+    <None Update="Scripts\asr_engine.py">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Scripts\" />
+    <None Update="Scripts\utils\download_audio.py">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Scripts\utils\get_youtube_transcript.py">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Scripts\utils\google_transcribe.py">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 
 

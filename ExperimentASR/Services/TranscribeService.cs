@@ -1,10 +1,6 @@
 ﻿using ExperimentASR.Models;
 using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Text;
-using System.Text.Json;
-using System.Windows;
 
 namespace ExperimentASR.Services
 {
@@ -18,7 +14,11 @@ namespace ExperimentASR.Services
 
         LogParser _logParser = new LogParser();
 
-        public TranscribeService(string pythonExe = "python", string scriptPath = "asr_engine.py", 
+        // Events
+        public event EventHandler? TranscriptionStarted;
+        public event EventHandler<TranscriptionFinishedEventArgs>? TranscriptionFinished;
+
+        public TranscribeService(string pythonExe = "python", string scriptPath = "./Scripts/asr_engine.py",
             string audioLanguage = "en", string whisperModelSize = "tiny")
         {
             _pythonExe = pythonExe;
@@ -29,7 +29,7 @@ namespace ExperimentASR.Services
 
         public string AsrEngineLocation
         {
-            get { return _scriptPath;  }
+            get { return _scriptPath; }
         }
 
         public TranscriptResult Transcribe(string audioPath)
@@ -52,6 +52,10 @@ namespace ExperimentASR.Services
                 UseShellExecute = false,
                 CreateNoWindow = true
             };
+
+            // Signal start
+            TranscriptionStarted?.Invoke(this, EventArgs.Empty);
+
             using (var process = new System.Diagnostics.Process { StartInfo = processStartInfo })
             {
                 try
@@ -62,17 +66,32 @@ namespace ExperimentASR.Services
                     _rawPythonOutput = output;
                     process.WaitForExit();
 
-                    return _logParser.Parse(output, error);
+                    var result = _logParser.Parse(output, error);
+
+                    // Signal finish (success or domain result)
+                    TranscriptionFinished?.Invoke(this, new TranscriptionFinishedEventArgs(result));
+                    return result;
                 }
                 catch (Exception ex)
                 {
-                    return new TranscriptResult
+                    var errorResult = new TranscriptResult
                     {
                         Status = "error",
                         Message = $"Failed to start Python process: {ex.Message}. \nRaw python script output: {_rawPythonOutput}"
                     };
+
+                    // Signal finish with error
+                    TranscriptionFinished?.Invoke(this, new TranscriptionFinishedEventArgs(errorResult));
+                    return errorResult;
                 }
             }
         }
+    }
+
+    // Event args for finished event
+    public class TranscriptionFinishedEventArgs : EventArgs
+    {
+        public TranscriptResult Result { get; }
+        public TranscriptionFinishedEventArgs(TranscriptResult result) => Result = result;
     }
 }

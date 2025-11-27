@@ -1,16 +1,8 @@
 ﻿using ExperimentASR.Services;
 using Microsoft.Win32;
 using System.IO;
-using System.Text;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 
 namespace ExperimentASR
 {
@@ -32,6 +24,18 @@ namespace ExperimentASR
             {
                 textAsrLocation.Text = "ASR Engine Location not found.";
             }
+            if (System.Numerics.Vector.IsHardwareAccelerated)
+            {
+                txtGPUAcceleration.Text = "GPU Acceleration: Yes";
+            }
+            else
+            {
+                txtGPUAcceleration.Text = "GPU Acceleration: No";
+            }
+
+            // Subscribe to service events
+            transcribeSerivce.TranscriptionStarted += TranscribeService_TranscriptionStarted;
+            transcribeSerivce.TranscriptionFinished += TranscribeService_TranscriptionFinished;
         }
 
         private void SelectFile_Click(object sender, RoutedEventArgs e)
@@ -40,12 +44,12 @@ namespace ExperimentASR
             ofd.Filter = "Audio files|*.wav;*.mp3;*.ogg;*.flac|All files|*.*";
 
             if (ofd.ShowDialog() == true)
-                AudioPath.Text = ofd.FileName;
+                txtAudioFilePath.Text = ofd.FileName;
         }
 
         private async void Transcribe_Click(object sender, RoutedEventArgs e)
         {
-            var file = AudioPath.Text;
+            var file = txtAudioFilePath.Text;
 
             if (string.IsNullOrWhiteSpace(file))
             {
@@ -53,7 +57,7 @@ namespace ExperimentASR
                 return;
             }
 
-            OutputBox.Text = "Please wait, analizing file...";
+            boxTranscriptOutput.Text = "Please wait, analizing file...";
             blockStatus.Text = "Working...";
 
             try
@@ -65,20 +69,20 @@ namespace ExperimentASR
                 {
                     var msg = "No transcript received.";
                     MessageBox.Show(msg, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-                    OutputBox.Text = msg;
+                    boxTranscriptOutput.Text = msg;
                     return;
                 }
 
                 if (!string.IsNullOrWhiteSpace(result.Transcript))
                 {
-                    OutputBox.Text = result.Transcript;
+                    boxTranscriptOutput.Text = result.Transcript;
                 }
                 else
                 {
                     // If Transcriber sets Message on failure, show it; otherwise show fallback
                     var msg = result.Message ?? "Під час розпізнавання сталася помилка.";
                     MessageBox.Show(msg, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-                    OutputBox.Text = msg;
+                    boxTranscriptOutput.Text = msg;
                 }
             }
             catch (FileNotFoundException fnfEx)
@@ -86,22 +90,45 @@ namespace ExperimentASR
                 // e.g. audio file not found
                 var msg = $"Файл не знайдено: {fnfEx.Message}";
                 MessageBox.Show(msg, "File not found", MessageBoxButton.OK, MessageBoxImage.Error);
-                OutputBox.Text = msg;
+                boxTranscriptOutput.Text = msg;
             }
             catch (System.ComponentModel.Win32Exception winEx)
             {
                 // e.g. python executable not found or cannot be started
                 var msg = $"Не вдалося запустити зовнішню програму: {winEx.Message}";
                 MessageBox.Show(msg, "Start error", MessageBoxButton.OK, MessageBoxImage.Error);
-                OutputBox.Text = msg;
+                boxTranscriptOutput.Text = msg;
             }
             catch (Exception ex)
             {
                 // Generic fallback
                 var msg = $"Помилка під час розпізнавання: {ex.Message}";
                 MessageBox.Show(msg, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-                OutputBox.Text = msg;
+                boxTranscriptOutput.Text = msg;
             }
+        }
+
+        private void TranscribeService_TranscriptionStarted(object? sender, System.EventArgs e)
+        {
+            // Marshals to UI thread and start indeterminate progress
+            Dispatcher.Invoke(() =>
+            {
+                progressTranscript.IsIndeterminate = true;
+                progressTranscript.Visibility = Visibility.Visible;
+                blockStatus.Text = "Transcribing...";
+            });
+        }
+
+        private void TranscribeService_TranscriptionFinished(object? sender, Services.TranscriptionFinishedEventArgs e)
+        {
+            // Marshals to UI thread and stop progress
+            Dispatcher.Invoke(() =>
+            {
+                progressTranscript.IsIndeterminate = false;
+                progressTranscript.Value = 0;
+                progressTranscript.Visibility = Visibility.Visible;
+                blockStatus.Text = "Ready";
+            });
         }
 
         private void btnCancelTranscribe_Click(object sender, RoutedEventArgs e)
@@ -110,6 +137,24 @@ namespace ExperimentASR
         }
 
         private void DataGrid_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+
+        }
+
+        private void btnCopy_Click(object sender, RoutedEventArgs e)
+        {
+            if (!string.IsNullOrEmpty(boxTranscriptOutput.Text))
+            {
+                Clipboard.SetText(boxTranscriptOutput.Text);
+            }
+        }
+
+        private void btnSaveTxt_Click(object sender, RoutedEventArgs e)
+        {
+
+        }
+
+        private void btnSaveSrt_Click(object sender, RoutedEventArgs e)
         {
 
         }
