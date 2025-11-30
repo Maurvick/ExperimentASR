@@ -193,10 +193,13 @@
 
             <TabItem Header="History">
                 <Grid>
-                    <DataGrid d:ItemsSource="{d:SampleData ItemCount=5}" SelectionChanged="DataGrid_SelectionChanged">
-                        <DataGrid.DataContext>
-                            <Models:TranscriptHistory/>
-                        </DataGrid.DataContext>
+                    <DataGrid x:Name="BenchmarkDataGrid" AutoGenerateColumns="False" Margin="0,0,0,20">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="Модель" Binding="{Binding ModelName}" Width="*"/>
+                            <DataGridTextColumn Header="WER (%)" Binding="{Binding AverageWer, StringFormat={}{0:F2}%}" Width="80"/>
+                            <DataGridTextColumn Header="RTF" Binding="{Binding AverageRtf, StringFormat={}{0:F3}x}" Width="70"/>
+                            <DataGridTextColumn Header="Тестів" Binding="{Binding TestsCount}" Width="70"/>
+                        </DataGrid.Columns>
                     </DataGrid>
                 </Grid>
             </TabItem>
@@ -207,7 +210,7 @@
                         <GroupBox Header="Whisper Model Size" Padding="10">
                             <StackPanel>
                                 <RadioButton x:Name="radioWhisperTiny" Content="Tiny" IsChecked="True"/>
-                                <RadioButton x:Name="radioWhisperBase" Content="Base"/>
+                                <RadioButton x:Name="radioWhisperBase" Content="Base" IsChecked="True"/>
                                 <RadioButton x:Name="radioWhisperSmall" Content="Small"/>
                                 <RadioButton x:Name="radioWhisperMedium" Content="Medium"/>
                             </StackPanel>
@@ -219,7 +222,7 @@
                         <RadioButton Content="Enable Language Detection" IsChecked="True"/>
                         <RadioButton Content="Set Preferred Language" IsChecked="False"/>
                         <Grid>
-                            <ComboBox IsEnabled="False" Margin="25,0,0,0">
+                            <ComboBox x:Name="comboLanguageSelect" IsEnabled="False" Margin="25,0,0,0">
                                 <ComboBoxItem Content="English"/>
                                 <ComboBoxItem Content="Ukrainian"/>
                                 <ComboBoxItem Content="Spanish"/>

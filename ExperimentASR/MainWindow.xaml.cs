@@ -121,7 +121,7 @@ namespace ExperimentASR
             return (int)duration.TotalSeconds;
         }
 
-        private async void MoveProgress()
+        private async void UpdateProgressBar()
         {
             int audioDurationSeconds = await Task.Run(() => GetAudioFileDuration(txtAudioFilePath.Text)).ConfigureAwait(false);
             if (audioDurationSeconds <= 0) return;
@@ -149,7 +149,7 @@ namespace ExperimentASR
             });
         }
 
-        private void TranscribeService_TranscriptionFinished(object? sender, Services.TranscriptionFinishedEventArgs e)
+        private void TranscribeService_TranscriptionFinished(object? sender, Models.TranscriptionFinishedEventArgs e)
         {
             // Marshals to UI thread and stop progress
             Dispatcher.Invoke(() =>

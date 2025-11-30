@@ -1,16 +1,17 @@
 ﻿using System.Text.Json;
 using ExperimentASR.Models;
+using Python.Runtime;
 
 namespace ExperimentASR.Services
 {
     public class LogParser
     {
-        public TranscriptResult Parse(string output, string error)
+        public TranscriptionResult Parse(string output, string error)
         {
             // 1. Handle cases where the script crashed or produced no output
             if (string.IsNullOrWhiteSpace(output))
             {
-                return new TranscriptResult
+                return new TranscriptionResult
                 {
                     Status = "error",
                     Message = !string.IsNullOrWhiteSpace(error)
@@ -30,7 +31,7 @@ namespace ExperimentASR.Services
                 };
 
                 // 3. Deserialize directly. This replaces the manual "TryGetProperty" checks.
-                var result = JsonSerializer.Deserialize<TranscriptResult>(output, options);
+                var result = JsonSerializer.Deserialize<TranscriptionResult>(output, options);
 
                 if (result == null)
                 {
@@ -61,7 +62,7 @@ namespace ExperimentASR.Services
             catch (JsonException ex)
             {
                 // 5. Handle Malformed JSON
-                return new TranscriptResult
+                return new TranscriptionResult
                 {
                     Status = "error",
                     Message = $"Invalid JSON format. Error: {ex.Message}\nRaw output: {output}"

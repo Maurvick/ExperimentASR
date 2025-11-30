@@ -1,6 +1,6 @@
 ﻿namespace ExperimentASR.Models
 {
-    public class TranscriptResult
+    public class TranscriptionResult
     {
         public string? Status { get; set; }
         public string? Message { get; set; }

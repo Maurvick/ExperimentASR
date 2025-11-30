@@ -7,20 +7,17 @@ namespace ExperimentASR.Services
     {
         private readonly string _pythonExe = "python";
         private readonly string _scriptPath = "./Scripts/asr_engine.py";
-        private readonly string _audioLanguage;
-        private readonly string _whisperModelSize;
-        private string _rawPythonOutput;
-
-        LogParser _logParser = new LogParser();
+        private readonly TranscribeOptions.AudioLanguage _audioLanguage;
+        private readonly TranscribeOptions.WhisperModelSize _whisperModelSize;
+        private string _rawPythonOutput = "";
 
         // Events
         public event EventHandler? TranscriptionStarted;
         public event EventHandler<TranscriptionFinishedEventArgs>? TranscriptionFinished;
 
-        public TranscribeService(string audioLanguage = "none", string whisperModelSize = "tiny")
+        public TranscribeService()
         {
-            _audioLanguage = audioLanguage;
-            _whisperModelSize = whisperModelSize;
+
         }
 
         public string AsrEngineLocation
@@ -28,7 +25,7 @@ namespace ExperimentASR.Services
             get { return _scriptPath; }
         }
 
-        public TranscriptResult Transcribe(string audioPath)
+        public TranscriptionResult Transcribe(string audioPath)
         {
             if (!File.Exists(audioPath))
             {
@@ -49,7 +46,7 @@ namespace ExperimentASR.Services
                 CreateNoWindow = true
             };
 
-            // Signal start
+            // Signal transcription start
             TranscriptionStarted?.Invoke(this, EventArgs.Empty);
 
             using (var process = new System.Diagnostics.Process { StartInfo = processStartInfo })
@@ -62,6 +59,7 @@ namespace ExperimentASR.Services
                     _rawPythonOutput = output;
                     process.WaitForExit();
 
+                    var _logParser = new LogParser();
                     var result = _logParser.Parse(output, error);
 
                     // Signal finish (success or domain result)
@@ -70,7 +68,7 @@ namespace ExperimentASR.Services
                 }
                 catch (Exception ex)
                 {
-                    var errorResult = new TranscriptResult
+                    var errorResult = new TranscriptionResult
                     {
                         Status = "error",
                         Message = $"Failed to start Python process: {ex.Message}. \nRaw python script output: {_rawPythonOutput}"
@@ -82,12 +80,5 @@ namespace ExperimentASR.Services
                 }
             }
         }
-    }
-
-    // Event args for finished event
-    public class TranscriptionFinishedEventArgs : EventArgs
-    {
-        public TranscriptResult Result { get; }
-        public TranscriptionFinishedEventArgs(TranscriptResult result) => Result = result;
     }
 }
