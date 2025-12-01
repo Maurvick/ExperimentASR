@@ -1,5 +1,6 @@
 ﻿using ExperimentASR.Models;
 using ExperimentASR.Services;
+using ExperimentASR.Views;
 using Microsoft.Win32;
 using NAudio.Wave;
 using System.Collections.ObjectModel;
@@ -18,6 +19,7 @@ namespace ExperimentASR
     {
         private readonly TranscribeService _transcribeSerivce = new TranscribeService();
         private readonly DatasetReader _datasetReader = new(); // або HuggingFaceDatasetLoader
+        private readonly SettingsManager _settingsManager = new SettingsManager();
 
         public MainWindow()
         {
@@ -107,16 +109,6 @@ namespace ExperimentASR
                 progressTranscript.Visibility = Visibility.Visible;
                 StatusText.Text = "Ready";
             });
-        }
-
-        private void Window_Loaded(object sender, RoutedEventArgs e)
-        {
-            // Check tools availability
-            GetAsrEngineLocation();
-            GetFFMPEGLocation();
-            // Subscribe to service events
-            _transcribeSerivce.TranscriptionStarted += TranscribeService_TranscriptionStarted;
-            _transcribeSerivce.TranscriptionFinished += TranscribeService_TranscriptionFinished;
         }
 
         private void SelectFile_Click(object sender, RoutedEventArgs e)
@@ -220,38 +212,24 @@ namespace ExperimentASR
 
         private void comboModelSelect_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            // 1. Safety Check: If the UI hasn't finished loading, these controls are null.
-            if (radioWhisperBase == null) return;
-
-            if (sender is ComboBox comboBox && comboBox.SelectedItem is ComboBoxItem selectedItem)
-            {
-                // 2. Safety Check: Ensure Content isn't null before ToString()
-                if (selectedItem.Content == null) return;
-
-                string selectedModel = selectedItem.Content.ToString();
-
-                if (selectedModel == "Whisper")
-                {
-                    radioWhisperBase.IsEnabled = true;
-                    radioWhisperTiny.IsEnabled = true;
-                    radioWhisperSmall.IsEnabled = true;
-                    radioWhisperMedium.IsEnabled = true;
-                }
-                else
-                {
-                    // Optional: logic to disable them if not Whisper
-                    radioWhisperBase.IsEnabled = false;
-                    radioWhisperTiny.IsEnabled = false;
-                    radioWhisperSmall.IsEnabled = false;
-                    radioWhisperMedium.IsEnabled = false;
-                }
-            }
+            
         }
 
         private void MoreOptions_Click(object sender, RoutedEventArgs e)
         {
             // Initialize your other window (ensure you have created 'DetailsWindow.xaml')
-            
+            var settingsWindow = new SettingsWindow(_settingsManager)
+            {
+                Owner = this
+            };
+
+            var result = settingsWindow.ShowDialog();
+            if (result == true)
+            {
+                // Settings were saved inside dialog. Ensure UI reflects them.
+                ApplySettingsToUI();
+            }
+        }
 
             // Use .Show() to open it and let the user click back to the main window
             
@@ -259,7 +237,7 @@ namespace ExperimentASR
             // OR use .ShowDialog() to force the user to close the new window 
             // before returning to the main one (good for settings/modals)
             // detailsWindow.ShowDialog();
-        }
+        
 
         private async void btnBenchmark_Click(object sender, RoutedEventArgs e)
         {
@@ -294,6 +272,72 @@ namespace ExperimentASR
             }
 
             StatusText.Text = "✅ Бенчмарк завершено!";
+        }
+
+        private void ApplySettingsToUI()
+        {
+            // Example: set model selection UI if those controls exist
+            try
+            {
+                // comboModelSelect is expected to contain items such as "Whisper"
+                if (comboAsrModels != null)
+                {
+                    // If ASR engine is Whisper, ensure Whisper is selected in model dropdown
+                    foreach (var item in comboAsrModels.Items)
+                    {
+                        if (item is ComboBoxItem cbi && cbi.Content != null && cbi.Content.ToString()?.ToLower().Contains(_settingsManager.AsrEngine.ToLower()) == true)
+                        {
+                            comboAsrModels.SelectedItem = cbi;
+                            break;
+                        }
+                    }
+                }
+
+                // If you have radio buttons for sizes (radioWhisperBase etc.) set them
+                if (_settingsManager.WhisperModelSize != null && radioWhisperBase != null)
+                {
+                    var size = _settingsManager.WhisperModelSize.ToLower();
+                    radioWhisperBase.IsChecked = size == "base";
+                    radioWhisperTiny.IsChecked = size == "tiny";
+                    radioWhisperSmall.IsChecked = size == "small";
+                    radioWhisperMedium.IsChecked = size == "medium";
+                }
+
+                // Audio language display (if you have a text block)
+                if (txtAudioLanguage != null)
+                {
+                    txtAudioLanguage.Text = $"Language: {_settingsManager.AudioLanguage}";
+                }
+            }
+            catch
+            {
+                // No-op; UI may not have all controls in certain builds
+            }
+        }
+
+
+        private void SettingsManager_SettingsChanged(object? sender, System.EventArgs e)
+        {
+            // Apply settings to UI on UI thread
+            Dispatcher.Invoke(ApplySettingsToUI);
+        }
+
+        private void Window_Loaded(object sender, RoutedEventArgs e)
+        {
+            // Load settings early so we can apply them to UI
+            _settingsManager.LoadSettings();
+            _settingsManager.SettingsChanged += SettingsManager_SettingsChanged;
+            // Check tools availability
+            GetAsrEngineLocation();
+            GetFFMPEGLocation();
+            // Subscribe to service events
+            _transcribeSerivce.TranscriptionStarted += TranscribeService_TranscriptionStarted;
+            _transcribeSerivce.TranscriptionFinished += TranscribeService_TranscriptionFinished;
+        }
+
+        private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
+        {
+
         }
     }
 }
