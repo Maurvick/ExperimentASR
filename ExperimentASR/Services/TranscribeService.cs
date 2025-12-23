@@ -233,6 +233,9 @@ namespace ExperimentASR.Services
             }
         }
         
+        // TODO: I need to make better CLI interface for testing.
+        // Also, make CLI message about current working asr models
+        // so it will be easier to extend it with other models
         public TranscriptionResult Transcribe(string audioPath)
         {
             if (!File.Exists(audioPath))

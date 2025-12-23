@@ -31,6 +31,7 @@ namespace ExperimentASR
 
         private void GetAsrEngineLocation()
         {
+            // TODO: It is better to store it locally for publish version
             if (File.Exists(_transcribeSerivce.AsrEngineLocation))
             {
                 textAsrLocation.Text = "ASR Engine Location found: " + _transcribeSerivce.AsrEngineLocation;
