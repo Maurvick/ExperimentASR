@@ -72,9 +72,12 @@
             <MenuItem Header="_File">
                 <MenuItem Header="_Import" />
                 <Separator />
-                <MenuItem Header="E_xit" />
+                <MenuItem Header="_Exit" Click="menuExit_Click" />
             </MenuItem>
-            <MenuItem Header="_Edit" />
+            <MenuItem Header="_Edit" IsEnabled="False" />
+            <MenuItem Header="_Tools" >
+                <MenuItem Header="_Benchmark" Click="menuBenchmark_Click" />
+            </MenuItem>
             <MenuItem Header="_Help">
                 <MenuItem Header="_About" />
             </MenuItem>
@@ -133,6 +136,21 @@
                                 </StackPanel>
                             </StackPanel>
 
+                            <Grid Margin="10">
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="*"/>
+                                </Grid.RowDefinitions>
+
+                                <StackPanel Orientation="Horizontal" Margin="0,0,0,10"/>
+
+                                <DataGrid x:Name="QueueGrid" Grid.Row="1" AutoGenerateColumns="False" IsReadOnly="True" Margin="-10,0,10,0">
+                                    <DataGrid.Columns>
+                                        <DataGridTextColumn Header="File Name" Binding="{Binding FileName}" Width="100"/>
+                                        <DataGridTextColumn Header="Status" Binding="{Binding Status}" Width="100"/>
+                                    </DataGrid.Columns>
+                                </DataGrid>
+                            </Grid>
 
                             <Separator Margin="0,20"/>
                             <TextBlock FontWeight="SemiBold" Height="21"><Run Text="ASR Models"/><LineBreak/><Run/></TextBlock>
@@ -146,7 +164,7 @@
                     </Border>
 
                     <Border x:Name="borderTranscriptOutput" Grid.Column="1" BorderBrush="Gray" BorderThickness="1"
-                            CornerRadius="8" Padding="20" Margin="5,0">
+                            CornerRadius="8" Padding="20" Margin="5,0,5,0">
                         <Grid>
                             <Grid.RowDefinitions>
                                 <RowDefinition Height="*"/>
@@ -170,28 +188,6 @@
                                         IsEnabled="False" Click="btnSummarizeText_Click"></Button>
                             </StackPanel>
                         </Grid>
-                    </Border>
-
-                    <Border Grid.Column="2" BorderBrush="Gray" BorderThickness="1"
-                            CornerRadius="8" Padding="16" Margin="10,0,0,0">
-                        <StackPanel Margin="0,0,0,47">
-                            <TextBlock x:Name="blockWaveform" Text="Waveform" FontWeight="SemiBold" Margin="0,0,0,10"/>
-
-                            <Border Height="120" 
-                                    CornerRadius="8">
-                                <TextBlock x:Name="blockWaveformVisualizer" Text="Waveform Visualizer" 
-                                           HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                            </Border>
-
-                            <TextBlock x:Name="blockTimer" Text="Timer:" Margin="0,20,0,0"/>
-                            <TextBlock x:Name="blockTime" Text="00:00:00" FontSize="24" FontWeight="Bold" Foreground="{StaticResource AccentBrush}"/>
-
-                            <TextBlock x:Name="blockAccuracyWer" Text="Accuracy (WER):" Margin="0,20,0,0"/>
-                            <TextBlock x:Name="blockAccuracyPercent" Text="-- %" FontSize="20" Foreground="#4CAF50"/>
-                            <Grid Height="100">
-                                <Button x:Name="btnBenchmark" Content="Benchmark" Click="btnBenchmark_Click" Margin="140,0,0,0"/>
-                            </Grid>
-                        </StackPanel>
                     </Border>
                 </Grid>
             </TabItem>

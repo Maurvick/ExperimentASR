@@ -22,11 +22,15 @@ namespace ExperimentASR
         private readonly TranscribeService _transcribeSerivce = new();
         private readonly SettingsManager _settingsManager = new();
         private readonly DatasetLoader _datasetReader = new();
+        private readonly TranscriptionQueueManager _manager = new();
+
         private List<AsrEngine> _engines = new();
 
         public MainWindow()
         {
             InitializeComponent();
+            // Bind the DataGrid to our manager's list
+            QueueGrid.ItemsSource = _manager.Jobs;
         }
 
         private void GetAsrEngineLocation()
@@ -119,11 +123,12 @@ namespace ExperimentASR
         {
             var ofd = new OpenFileDialog();
             ofd.Filter = "Audio files|*.wav;*.mp3;*.ogg;*.flac|All files|*.*";
-
+            ofd.Multiselect = true;
             if (ofd.ShowDialog() == true)
                 txtAudioFilePath.Text = ofd.FileName;
         }
 
+        // Start Transcription
         private async void Transcribe_Click(object sender, RoutedEventArgs e)
         {
             var file = txtAudioFilePath.Text;
@@ -213,6 +218,11 @@ namespace ExperimentASR
         {
 
         }
+
+        private void btnSummarizeText_Click(object sender, RoutedEventArgs e)
+        {
+
+        }   
 
         private void comboModelSelect_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
@@ -324,6 +334,20 @@ namespace ExperimentASR
         private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
         {
 
+        }
+
+        private void menuExit_Click(object sender, RoutedEventArgs e)
+        {
+            Application.Current.Shutdown();
+        }
+
+        private void menuBenchmark_Click(object sender, RoutedEventArgs e)
+        {
+            BenchmarkWindow benchmarkWindow = new BenchmarkWindow
+            {
+                Owner = this
+            };
+            benchmarkWindow.ShowDialog();
         }
     }
 }
