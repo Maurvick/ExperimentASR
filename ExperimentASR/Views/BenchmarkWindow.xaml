@@ -7,26 +7,36 @@
         mc:Ignorable="d"
         Title="BenchmarkWindow" Height="450" Width="800">
     <Grid>
-        <Border BorderBrush="Gray" BorderThickness="1"
-        CornerRadius="8" Padding="16" Margin="10,10,10,10">
-            <StackPanel Margin="0,0,0,47">
-                <TextBlock x:Name="blockWaveform" Text="Waveform" FontWeight="SemiBold" Margin="0,0,0,10"/>
+		<Border BorderBrush="Gray" BorderThickness="1"
+CornerRadius="8" Padding="16" Margin="10,10,605,10">
+			<StackPanel Margin="0,0,0,47">
+				<TextBlock x:Name="blockWaveform" Text="Waveform" FontWeight="SemiBold" Margin="0,0,0,10"/>
 
-                <Border Height="120" 
-                CornerRadius="8">
-                    <TextBlock x:Name="blockWaveformVisualizer" Text="Waveform Visualizer" 
-                       HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                </Border>
+				<Border Height="120" 
+        CornerRadius="8">
+					<TextBlock x:Name="blockWaveformVisualizer" Text="Waveform Visualizer" 
+               HorizontalAlignment="Center" VerticalAlignment="Center"/>
+				</Border>
 
-                <TextBlock x:Name="blockTimer" Text="Timer:" Margin="0,20,0,0"/>
-                <TextBlock x:Name="blockTime" Text="00:00:00" FontSize="24" FontWeight="Bold"/>
+				<TextBlock x:Name="blockTimer" Text="Timer:" Margin="0,20,0,0"/>
+				<TextBlock x:Name="blockTime" Text="00:00:00" FontSize="24" FontWeight="Bold"/>
 
-                <TextBlock x:Name="blockAccuracyWer" Text="Accuracy (WER):" Margin="0,20,0,0"/>
-                <TextBlock x:Name="blockAccuracyPercent" Text="-- %" FontSize="20" Foreground="#4CAF50"/>
-                <Grid Height="100">
-                    <Button x:Name="btnBenchmark" Content="Benchmark" Click="btnBenchmark_Click" Margin="10,10,0,0" VerticalAlignment="Top"/>
-                </Grid>
-            </StackPanel>
-        </Border>
+				<TextBlock x:Name="blockAccuracyWer" Text="Accuracy (WER):" Margin="0,20,0,0"/>
+				<TextBlock x:Name="blockAccuracyPercent" Text="-- %" FontSize="20" Foreground="#4CAF50"/>
+				<Grid Height="100">
+					<Button x:Name="btnBenchmark" Content="Benchmark" Click="btnBenchmark_Click" Margin="0,10,0,0" VerticalAlignment="Top"/>
+				</Grid>
+			</StackPanel>
+		</Border>
+
+		<DataGrid x:Name="BenchmarkDataGrid" AutoGenerateColumns="False" Margin="211,10,10,10" 
+        BorderBrush="Gray" BorderThickness="1" Padding="16">
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="Модель" Binding="{Binding ModelName}" Width="*"/>
+                <DataGridTextColumn Header="WER (%)" Binding="{Binding AverageWer, StringFormat={}{0:F2}%}" Width="80"/>
+                <DataGridTextColumn Header="RTF" Binding="{Binding AverageRtf, StringFormat={}{0:F3}x}" Width="70"/>
+                <DataGridTextColumn Header="Тестів" Binding="{Binding TestsCount}" Width="70"/>
+            </DataGrid.Columns>
+        </DataGrid>
     </Grid>
 </Window>

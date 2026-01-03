@@ -9,7 +9,7 @@
         mc:Ignorable="d"
         ui:WindowHelper.UseModernWindowStyle="True"
         TextOptions.TextFormattingMode="Display" 
-        Title="Transcription Window" Height="720" Width="1280" Loaded="Window_Loaded" Closing="Window_Closing">
+        Title="MainWindow" Height="720" Width="1280" Loaded="Window_Loaded" Closing="Window_Closing">
 	<Window.Resources>
 		<SolidColorBrush x:Key="AccentBrush" Color="#0057B7"/>
 		<SolidColorBrush x:Key="AccentLightBrush" Color="#FFD700"/>
@@ -28,7 +28,6 @@
 	</Window.Resources>
 
 	<DockPanel LastChildFill="True">
-
 		<StatusBar DockPanel.Dock="Bottom" VerticalAlignment="Bottom">
 			<StatusBarItem HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch">
 				<Grid>
@@ -74,208 +73,146 @@
 				<Separator />
 				<MenuItem Header="_Exit" Click="menuExit_Click" />
 			</MenuItem>
-			<MenuItem Header="_Edit" IsEnabled="False" />
+
+			<MenuItem Header="_Edit">
+				<MenuItem Header="_Undo" />
+				<MenuItem Header="_Redo" />
+				<Separator />
+				<MenuItem Header="_Cut" />
+				<MenuItem Header="_Copy" />
+				<MenuItem Header="_Paste" />
+			</MenuItem>
+
 			<MenuItem Header="_Tools" >
+				<MenuItem Header="_Settings" Click="menuSettings_Click" />
 				<MenuItem Header="_Benchmark" Click="menuBenchmark_Click" />
 				<MenuItem Header="_Logs" Click="menuLogs_Click"/>
 			</MenuItem>
+
 			<MenuItem Header="_Help">
-				<MenuItem Header="_About" />
+				<MenuItem Header="_About" Click="menuAbout_Click" />
 			</MenuItem>
 		</Menu>
 
-		<TabControl>
-			<TabItem Header="Main">
-				<Grid Margin="10">
-					<Grid.ColumnDefinitions>
-						<ColumnDefinition Width="300"/>
-						<ColumnDefinition Width="*"/>
-						<ColumnDefinition Width="280"/>
-					</Grid.ColumnDefinitions>
+		<Grid Margin="10">
+			<Grid.ColumnDefinitions>
+				<ColumnDefinition Width="300"/>
+				<ColumnDefinition Width="*"/>
+				<ColumnDefinition Width="280"/>
+			</Grid.ColumnDefinitions>
 
-					<Border Grid.Column="0" BorderBrush="Gray" BorderThickness="1"
-                            CornerRadius="8" Padding="16" Margin="0,0,10,0">
-						<StackPanel x:Name="panelTranscriptOptions" VerticalAlignment="Center" Height="536">
+			<Border Grid.Column="0" BorderBrush="Gray" BorderThickness="1"
+            CornerRadius="8" Padding="16" Margin="0,0,10,0">
 
-							<Button x:Name="btnStartTranscribe" Height="120" Width="120" Margin="0,10,0,0"
-                                    Style="{StaticResource RoundButtonStyle}"
-                                    Background="{StaticResource AccentBrush}"
-                                    Foreground="White" FontSize="48" FontWeight="Bold"
-                                    Content="▶" 
-                                    Click="Transcribe_Click"/>
+				<StackPanel x:Name="panelTranscriptOptions" VerticalAlignment="Center" Height="536">
 
-							<TextBlock x:Name="blockStartTranscription" Text="Start transcription" 
-                                       HorizontalAlignment="Center" FontSize="16" Margin="0,10,0,10"/>
+					<Button x:Name="btnStartTranscribe" Height="120" Width="120" Margin="0,10,0,0"
+                    Style="{StaticResource RoundButtonStyle}"
+                    Background="{StaticResource AccentBrush}"
+                    Foreground="White" FontSize="48" FontWeight="Bold"
+                    Content="▶" 
+                    Click="Transcribe_Click"/>
 
-							<TextBlock x:Name="blockImportLocalFile" 
-                                       Margin="0,10,0,5" Text="Import local file"/>
+					<TextBlock x:Name="blockStartTranscription" Text="Start transcription" 
+                       HorizontalAlignment="Center" FontSize="16" Margin="0,10,0,10"/>
 
-							<Grid>
-								<Grid.ColumnDefinitions>
-									<ColumnDefinition Width="*"/>
-									<ColumnDefinition Width="Auto"/>
-								</Grid.ColumnDefinitions>
-								<TextBox x:Name="txtAudioFilePath" IsReadOnly="True" VerticalContentAlignment="Center"/>
-								<Button x:Name="btnFileSelect" Grid.Column="1" Content="📁" Width="40" Margin="5,0,0,0" Click="SelectFile_Click"/>
-							</Grid>
+					<TextBlock x:Name="blockImportLocalFile" 
+                       Margin="0,10,0,5" Text="Import local file"/>
 
-							<StackPanel VerticalAlignment="Stretch">
-								<StackPanel Orientation="Horizontal" Margin="0,10,0,0">
+					<Grid>
+						<Grid.ColumnDefinitions>
+							<ColumnDefinition Width="*"/>
+							<ColumnDefinition Width="Auto"/>
+						</Grid.ColumnDefinitions>
+						<TextBox x:Name="txtAudioFilePath" IsReadOnly="True" VerticalContentAlignment="Center"/>
+						<Button x:Name="btnFileSelect" Grid.Column="1" Content="📁" Width="40" Margin="5,0,0,0" Click="SelectFile_Click"/>
+					</Grid>
 
-									<Button x:Name="btnCancelTranscribe" 
-                                        Content="Cancel Transcription" 
-                                        Background="#D32F2F" 
-                                        Foreground="White" 
-                                        Click="Transcribe_Click"/>
+					<StackPanel VerticalAlignment="Stretch">
+						<StackPanel Orientation="Horizontal" Margin="0,10,0,0">
 
-									<TextBlock VerticalAlignment="Center" Margin="10,0,0,0">            
-                                        <Hyperlink x:Name="linkMoreOptions" Click="MoreOptions_Click">
-                                            More options...
-                                        </Hyperlink>
-									</TextBlock>
+							<Button x:Name="btnCancelTranscribe" 
+                        Content="Cancel Transcription" 
+                        Background="#D32F2F" 
+                        Foreground="White" 
+                        Click="Transcribe_Click"/>
 
-								</StackPanel>
-							</StackPanel>
+							<TextBlock x:Name="linkMoreOptions1" VerticalAlignment="Center" Margin="10,0,0,0" IsEnabled="False">            
+                        <Hyperlink x:Name="linkMoreOptions" Click="MoreOptions_Click">
+                            More options...
+                        </Hyperlink>
+							</TextBlock>
 
-							<Grid Margin="10">
-								<Grid.RowDefinitions>
-									<RowDefinition Height="Auto"/>
-									<RowDefinition Height="*"/>
-								</Grid.RowDefinitions>
-
-								<StackPanel Orientation="Horizontal" Margin="0,0,0,10"/>
-
-								<DataGrid x:Name="QueueGrid" Grid.Row="1" AutoGenerateColumns="False" IsReadOnly="True" Margin="-10,0,10,0">
-									<DataGrid.Columns>
-										<DataGridTextColumn Header="File Name" Binding="{Binding FileName}" Width="100"/>
-										<DataGridTextColumn Header="Status" Binding="{Binding Status}" Width="100"/>
-									</DataGrid.Columns>
-								</DataGrid>
-							</Grid>
-
-							<Separator Margin="0,20"/>
-		
-							<TextBlock FontWeight="SemiBold" Height="21"><Run Text="ASR Models"/><LineBreak/><Run/></TextBlock>
-							<ComboBox x:Name="comboAsrModels" Margin="0,10,0,10" Width="150" Height="35">
-								<ComboBoxItem Content="whisper"/>
-								<ComboBoxItem Content="google_speech_to_text"/>
-								<ComboBoxItem Content="deepspeech"/>
-								<ComboBoxItem Content="vosk"/>
-							</ComboBox>
-							<StackPanel VerticalAlignment="Stretch">
-								<StackPanel Orientation="Horizontal" Margin="0,10,0,0">
-									<RadioButton x:Name="radioNative" Content="Native" IsChecked="True" Margin="0,0,10,0" Width="76"/>
-									<RadioButton x:Name="radioPython" Content="Python"/>
-								</StackPanel>
-							</StackPanel>
 						</StackPanel>
-					</Border>
+					</StackPanel>
 
-					<Border x:Name="borderTranscriptOutput" Grid.Column="1" BorderBrush="Gray" BorderThickness="1"
-                            CornerRadius="8" Padding="20" Margin="5,0,5,0">
-						<Grid>
-							<Grid.RowDefinitions>
-								<RowDefinition Height="*"/>
-								<RowDefinition Height="Auto"/>
-							</Grid.RowDefinitions>
+					<Grid Margin="10">
+						<Grid.RowDefinitions>
+							<RowDefinition Height="Auto"/>
+							<RowDefinition Height="*"/>
+						</Grid.RowDefinitions>
 
-							<ScrollViewer VerticalScrollBarVisibility="Auto">
-								<TextBox x:Name="boxTranscriptOutput" 
-                                         TextWrapping="Wrap" AcceptsReturn="True"
-                                         FontSize="18" 
-                                         Background="Transparent"
-                                         BorderThickness="0" IsReadOnly="True"
-                                         Text="Transcript result will appear here..." Height="500" Width="625" />
-							</ScrollViewer>
+						<StackPanel Orientation="Horizontal" Margin="0,0,0,10"/>
 
-							<StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,10,0,0">
-								<Button x:Name="btnCopy" Content="Copy" Margin="0,0,5,0" Click="btnCopy_Click"/>
-								<Button x:Name="btnSaveTxt" Content="Save TXT" Margin="0,0,5,0" Click="btnSaveTxt_Click"/>
-								<Button x:Name="btnSaveSrt" Content="Save SRT" Click="btnSaveSrt_Click" IsEnabled="False"/>
-								<Button x:Name="btnSummarizeText" Content="Summarize"  Margin="5,0,0,0" 
-                                        IsEnabled="False" Click="btnSummarizeText_Click"></Button>
-							</StackPanel>
-						</Grid>
-					</Border>
+						<DataGrid x:Name="QueueGrid" Grid.Row="1" AutoGenerateColumns="False" IsReadOnly="True" Margin="-10,0,10,0">
+							<DataGrid.Columns>
+								<DataGridTextColumn Header="File Name" Binding="{Binding FileName}" Width="100"/>
+								<DataGridTextColumn Header="Status" Binding="{Binding Status}" Width="100"/>
+							</DataGrid.Columns>
+						</DataGrid>
+					</Grid>
 
-					<Border Grid.Column="2" BorderBrush="Gray" BorderThickness="1"
-                            CornerRadius="8" Padding="16" Margin="10,0,0,0">
-						<StackPanel Margin="0,0,0,47">
-							<TextBlock x:Name="blockWaveform" Text="Waveform" FontWeight="SemiBold" Margin="0,0,0,10"/>
+					<Separator Margin="0,20"/>
 
-							<Border Height="120" 
-                                    CornerRadius="8">
-								<TextBlock x:Name="blockWaveformVisualizer" Text="Waveform Visualizer" 
-                                           HorizontalAlignment="Center" VerticalAlignment="Center"/>
-							</Border>
+					<TextBlock FontWeight="SemiBold" Height="21"><Run Text="ASR Models"/><LineBreak/><Run/></TextBlock>
+					<ComboBox x:Name="comboAsrModels" Margin="0,10,0,10" Width="150" Height="35">
+						<ComboBoxItem Content="whisper"/>
+						<ComboBoxItem Content="google_speech_to_text"/>
+						<ComboBoxItem Content="deepspeech"/>
+						<ComboBoxItem Content="vosk"/>
+					</ComboBox>
 
-							<TextBlock x:Name="blockTimer" Text="Timer:" Margin="0,20,0,0"/>
-							<TextBlock x:Name="blockTime" Text="00:00:00" FontSize="24" FontWeight="Bold" Foreground="{StaticResource AccentBrush}"/>
-
-							<TextBlock x:Name="blockAccuracyWer" Text="Accuracy (WER):" Margin="0,20,0,0"/>
-							<TextBlock x:Name="blockAccuracyPercent" Text="-- %" FontSize="20" Foreground="#4CAF50"/>
-							<Grid Height="100">
-								<Button x:Name="btnBenchmark" Content="Benchmark" Click="btnBenchmark_Click" Margin="140,0,0,0"/>
-							</Grid>
+					<StackPanel VerticalAlignment="Stretch">
+						<StackPanel Orientation="Horizontal" Margin="0,10,0,0">
+							<RadioButton x:Name="radioNative" Content="Native" IsChecked="True" Margin="0,0,10,0" Width="76"/>
+							<RadioButton x:Name="radioPython" Content="Python"/>
 						</StackPanel>
-					</Border>
-				</Grid>
-			</TabItem>
+					</StackPanel>
+				</StackPanel>
+			</Border>
 
-			<TabItem Header="History">
+			<Border x:Name="borderTranscriptOutput" Grid.Column="1" BorderBrush="Gray" BorderThickness="1"
+            CornerRadius="8" Padding="20" Margin="5,0,5,0">
 				<Grid>
-					<DataGrid x:Name="BenchmarkDataGrid" AutoGenerateColumns="False" Margin="0,0,0,20">
-						<DataGrid.Columns>
-							<DataGridTextColumn Header="Модель" Binding="{Binding ModelName}" Width="*"/>
-							<DataGridTextColumn Header="WER (%)" Binding="{Binding AverageWer, StringFormat={}{0:F2}%}" Width="80"/>
-							<DataGridTextColumn Header="RTF" Binding="{Binding AverageRtf, StringFormat={}{0:F3}x}" Width="70"/>
-							<DataGridTextColumn Header="Тестів" Binding="{Binding TestsCount}" Width="70"/>
-						</DataGrid.Columns>
-					</DataGrid>
-				</Grid>
-			</TabItem>
+					<Grid.RowDefinitions>
+						<RowDefinition Height="*"/>
+						<RowDefinition Height="Auto"/>
+					</Grid.RowDefinitions>
 
-			<TabItem Header="Settings">
-				<Grid Margin="20">
-					<StackPanel>
-						<GroupBox Header="Whisper Model Size" Padding="10">
-							<StackPanel>
-								<ComboBox x:Name="comboWhisperSize" Width="200">
-									<ComboBoxItem Content="tiny"/>
-									<ComboBoxItem Content="base"/>
-									<ComboBoxItem Content="small"/>
-									<ComboBoxItem Content="medium"/>
-									<ComboBoxItem Content="large"/>
-								</ComboBox>
-							</StackPanel>
-						</GroupBox>
+					<ScrollViewer VerticalScrollBarVisibility="Auto">
+						<TextBox x:Name="boxTranscriptOutput" 
+                         TextWrapping="Wrap" AcceptsReturn="True"
+                         FontSize="18" 
+                         Background="Transparent"
+                         BorderThickness="0" IsReadOnly="True"
+                         Text="Transcript result will appear here..." Height="500" Width="625" />
+					</ScrollViewer>
 
-						<TextBlock x:Name="labelLanguageSettings" Text="Language Settings" 
-                                   Foreground="{StaticResource AccentBrush}" 
-                                   Margin="0,20,0,10" FontWeight="Bold"/>
-						<RadioButton Content="Enable Language Detection" IsChecked="True"/>
-						<RadioButton Content="Set Preferred Language" IsChecked="False"/>
-						<Grid>
-							<ComboBox x:Name="comboLanguageSelect" IsEnabled="False" Margin="25,0,0,0">
-								<ComboBoxItem Content="English"/>
-								<ComboBoxItem Content="Ukrainian"/>
-								<ComboBoxItem Content="Spanish"/>
-								<ComboBoxItem Content="French"/>
-								<ComboBoxItem Content="German"/>
-							</ComboBox>
-						</Grid>
-
-
-
-						<TextBlock x:Name="labelAdditionalSettings" Text="Additional Settings" 
-                                   Foreground="{StaticResource AccentBrush}" 
-                                   Margin="0,20,0,10" FontWeight="Bold"/>
-						<CheckBox Content="Enable GPU Acceleration" IsChecked="False" IsEnabled="False"/>
-						<CheckBox Content="Save audio to disk after recognition" IsChecked="False" IsEnabled="False"/>
-						<Grid/>
+					<StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,10,0,0">
+						<Button x:Name="btnCopy" Content="Copy" Margin="0,0,5,0" Click="btnCopy_Click"/>
+						<Button x:Name="btnSaveTxt" Content="Save TXT" Margin="0,0,5,0" Click="btnSaveTxt_Click"/>
+						<Button x:Name="btnSaveSrt" Content="Save SRT" Click="btnSaveSrt_Click" IsEnabled="False"/>
+						<Button x:Name="btnSummarizeText" Content="Summarize"  Margin="5,0,0,0" 
+                        IsEnabled="False" Click="btnSummarizeText_Click"></Button>
 					</StackPanel>
 				</Grid>
-			</TabItem>
-		</TabControl>
+			</Border>
+
+			<Border Grid.Column="2" BorderBrush="Gray" BorderThickness="1"
+            CornerRadius="8" Padding="16" Margin="10,0,0,0">
+				
+			</Border>
+
+		</Grid>
 	</DockPanel>
 </Window>

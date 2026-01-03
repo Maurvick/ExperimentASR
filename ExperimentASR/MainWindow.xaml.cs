@@ -25,18 +25,33 @@ namespace ExperimentASR
         private readonly DatasetLoader _datasetReader = new();
         private readonly TranscriptionQueueManager _manager = new();
 
-        private List<AsrEngine> _engines = new();
-
         public MainWindow()
         {
             InitializeComponent();
-            // Bind the DataGrid to our manager's list
+            // Bind the DataGrid to queue manager list
             QueueGrid.ItemsSource = _manager.Jobs;
-        }
+			// Subscribe to status updates
+			StatusService.Instance.OnStatusChanged += UpdateStatusText;
+		}
 
-        private void GetAsrEngineLocation()
+		private void UpdateStatusText(string message)
+		{
+			// Marshals to UI thread
+			Dispatcher.Invoke(() =>
+			{
+				StatusText.Text = message;
+			});
+		}
+
+		// Unsubscribe from events on window close
+		protected override void OnClosed(EventArgs e)
+		{
+			StatusService.Instance.OnStatusChanged -= UpdateStatusText;
+			base.OnClosed(e);
+		}
+
+		private void GetAsrEngineLocation()
         {
-            // TODO: It is better to store it locally for publish version
             if (File.Exists(_transcribeSerivce.AsrEngineLocation))
             {
                 textAsrLocation.Text = "ASR Engine Location found: " + _transcribeSerivce.AsrEngineLocation;
@@ -58,8 +73,9 @@ namespace ExperimentASR
 
         private void GetFFMPEGLocation()
         {
-            try
-            {
+			// TODO: this is does not work as intended, needs fixing
+			try
+			{
                 ProcessStartInfo processStartInfo = new ProcessStartInfo
                 {
                     FileName = "cmd.exe",
@@ -71,7 +87,8 @@ namespace ExperimentASR
                 if (processStartInfo.Environment.ContainsKey("FFMPEG"))
                 {
 
-                    txtFFMPEGPath.Text = "FFMPEG Path: " + processStartInfo.Environment["FFMPEG"];
+                    txtFFMPEGPath.Text = "FFMPEG Path: " + 
+                        processStartInfo.Environment["FFMPEG"];
                 }
             }
             catch
@@ -159,7 +176,7 @@ namespace ExperimentASR
             }
 
             boxTranscriptOutput.Text = "Please wait, analizing file...";
-            StatusText.Text = "Working...";
+            StatusService.Instance.Update("Working...");
 
             try
             {
@@ -251,95 +268,13 @@ namespace ExperimentASR
 
         private void MoreOptions_Click(object sender, RoutedEventArgs e)
         {
-            // Initialize your other window (ensure you have created 'DetailsWindow.xaml')
-            var settingsWindow = new SettingsWindow(_settingsManager)
-            {
-                Owner = this
-            };
-
-            var result = settingsWindow.ShowDialog();
-            if (result == true)
-            {
-                // Settings were saved inside dialog. Ensure UI reflects them.
-                ApplySettingsToUI();
-            }
+            
         }
         
-        private async void btnBenchmark_Click(object sender, RoutedEventArgs e)
-        {
-            StatusText.Text = "Loading dataset...";
-
-            await _datasetReader.LoadDatasetAsync(txtAudioFilePath.Text);
-
-            StatusText.Text = $"{_datasetReader.TestItems.Count} samples loaded from dataset...";
-
-            _engines.AddRange(new AsrEngine[]
-            {
-                new VoskEngine(),
-            });
-
-            var results = new ObservableCollection<BenchmarkResult>();
-            BenchmarkDataGrid.ItemsSource = results;
-
-            var bench = new BenchmarkRunner();
-            foreach (var engine in _engines)
-            {
-                StatusText.Text = $"Testing {engine.Name}...";
-
-                var benchmark = await bench.RunEngineBenchmarkAsync(engine, _datasetReader.TestItems.Take(50));
-                results.Add(benchmark);
-            }
-
-            StatusText.Text = "✅ Benchmark completed!";
-        }
-
         private void ApplySettingsToUI()
         {
-            // Example: set model selection UI if those controls exist
-            try
-            {
-                // Get the target size string from settings
-                var targetSize = _settingsManager.AsrEngine?.ToLower();
-
-                if (!string.IsNullOrEmpty(targetSize) && comboWhisperSize != null)
-                {
-                    foreach (var item in comboWhisperSize.Items)
-                    {
-                        // Check if the item is a ComboBoxItem (XAML defined)
-                        if (item is ComboBoxItem cbi && cbi.Content?.ToString().ToLower() == targetSize)
-                        {
-                            comboAsrModels.SelectedItem = cbi;
-                            break;
-                        }
-
-                        // Check if the item is just a String (Code defined)
-                        else if (item is string s && s.ToLower() == targetSize)
-                        {
-                            comboWhisperSize.SelectedItem = item;
-                            break;
-                        }
-                    }
-                }
-
-                // If you have radio buttons for sizes (radioWhisperBase etc.) set them
-                if (_settingsManager.WhisperModelSize != null && comboWhisperSize != null)
-                {
-                    var size = _settingsManager.WhisperModelSize.ToLower();
-                    comboWhisperSize.SelectedItem = size;
-                }
-
-                // Audio language display (if you have a text block)
-                if (comboLanguageSelect != null)
-                {
-
-                }
-            }
-            catch
-            {
-                // No-op; UI may not have all controls in certain builds
-            }
+ 
         }
-
 
         private void SettingsManager_SettingsChanged(object? sender, System.EventArgs e)
         {
@@ -362,8 +297,10 @@ namespace ExperimentASR
 
         private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
         {
-
-        }
+			// Unsubscribe from service events
+			_transcribeSerivce.TranscriptionStarted -= TranscribeService_TranscriptionStarted;
+            _transcribeSerivce.TranscriptionFinished -= TranscribeService_TranscriptionFinished;
+		}
 
         private void menuExit_Click(object sender, RoutedEventArgs e)
         {
@@ -379,7 +316,23 @@ namespace ExperimentASR
             benchmarkWindow.ShowDialog();
         }
 
-        private void menuLogs_Click(object sender, RoutedEventArgs e)
+        private void menuSettings_Click(object sender, RoutedEventArgs e)
+        {
+			// Initialize your other window (ensure you have created 'DetailsWindow.xaml')
+			var settingsWindow = new SettingsWindow(_settingsManager)
+			{
+				Owner = this
+			};
+
+			var result = settingsWindow.ShowDialog();
+			if (result == true)
+			{
+				// Settings were saved inside dialog. Ensure UI reflects them.
+				ApplySettingsToUI();
+			}
+		}
+
+		private void menuLogs_Click(object sender, RoutedEventArgs e)
         {
             try
             {
@@ -391,5 +344,14 @@ namespace ExperimentASR
                 MessageBox.Show("Could not open logs file.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
-    }
+
+        private void menuAbout_Click(object sender, RoutedEventArgs e)
+        {
+            AboutWindow aboutWindow = new AboutWindow
+            {
+                Owner = this
+            };
+            aboutWindow.ShowDialog();
+		}
+	}
 }
