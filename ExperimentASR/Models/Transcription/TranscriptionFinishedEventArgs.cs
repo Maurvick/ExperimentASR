@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace ExperimentASR.Models
+﻿namespace ExperimentASR.Models
 {
     // Event args for finished event
     public class TranscriptionFinishedEventArgs : EventArgs

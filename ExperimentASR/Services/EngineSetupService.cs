@@ -1,9 +1,6 @@
-﻿using System;
-using System.IO;
+﻿using System.IO;
 using System.IO.Compression;
-using System.Linq;
 using System.Net.Http;
-using System.Threading.Tasks;
 
 namespace ExperimentASR.Services
 {
@@ -52,8 +49,9 @@ namespace ExperimentASR.Services
 				StatusService.Instance.SetProgress(25);
 				StatusService.Instance.UpdateStatus("Downloading Whisper Engine from GitHub...");
 
-				// 1. Download the Zip
-				await DownloadFileAsync(EngineDownloadUrl, zipPath);
+                // 1. Download the Zip
+                // TODO: Donwload url is hardcoded for specific version, so it can break in future.
+                await DownloadFileAsync(EngineDownloadUrl, zipPath);
 				StatusService.Instance.SetProgress(50);
 
 				// 2. Extract specific file from the specific folder structure

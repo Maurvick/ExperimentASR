@@ -66,7 +66,7 @@ namespace ExperimentASR
         }
 
         // TODO: this is unused, remove or implement
-        private async void UpdateProgressBar()
+        private async Task UpdateProgressBar()
         {
             int audioDurationSeconds = await Task.Run(() => 
                 AudioHelper.GetAudioFileDuration(txtAudioFilePath.Text)).ConfigureAwait(false);
@@ -212,8 +212,10 @@ namespace ExperimentASR
 
         private void btnSaveTxt_Click(object sender, RoutedEventArgs e)
         {
-            var sfd = new SaveFileDialog();
-            sfd.Filter = "Text files|*.txt|All files|*.*";
+            var sfd = new SaveFileDialog
+            {
+                Filter = "Text files|*.txt|All files|*.*"
+            };
             if (sfd.ShowDialog() == true)
             {
                 File.WriteAllText(sfd.FileName, boxTranscriptOutput.Text);
@@ -229,16 +231,6 @@ namespace ExperimentASR
         {
 
         }   
-
-        private void comboModelSelect_SelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
-            
-        }
-
-        private void MoreOptions_Click(object sender, RoutedEventArgs e)
-        {
-            
-        }
 
         private void ApplySettingsToUI()
         {
@@ -286,47 +278,45 @@ namespace ExperimentASR
             _transcribeSerivce.TranscriptionFinished += TranscribeService_TranscriptionFinished;
             // Subscribe to status updates
             StatusService.Instance.OnStatusChanged += UpdateStatusText;
-            if (!_setupService.IsEngineInstalled())
+            if (!_setupService.IsEngineInstalled() &&
+                MessageBox.Show("Whisper ASR engine not found. Download and install it now?",
+                    "Engine Missing", MessageBoxButton.YesNo, MessageBoxImage.Question) ==
+                MessageBoxResult.Yes)
             {
-                if (MessageBox.Show("Whisper ASR engine not found. Download and install it now?", 
-                    "Engine Missing", MessageBoxButton.YesNo, MessageBoxImage.Question) == 
-                    MessageBoxResult.Yes)
+                ProgressWindow progressWindow = new ProgressWindow
                 {
-					ProgressWindow progressWindow = new ProgressWindow
-                    {
-                        Owner = this
-                    };
-					progressWindow.Show();
-					await DownloadWhisper();
-                    progressWindow.Close();
-					return;
-				}
-			}
+                    Owner = this
+                };
+                progressWindow.Show();
+                await DownloadWhisper();
+                progressWindow.Close();
+                return;
+            }
             // Check tools availability
             GetAsrEngineLocation();
             if (FFmpegLoader.IsFfmpegAvailableInShell())
             {
-				txtFFMPEGPath.Text = "FFMPEG: Installed";
-			}
-			else
-			{
-				if (MessageBox.Show("FFMPEG not found in system PATH. Install via winget now?",
-				"FFMPEG Missing", MessageBoxButton.YesNo, MessageBoxImage.Question) ==
-				MessageBoxResult.Yes)
-				{
-					ProgressWindow progressWindow = new ProgressWindow
-					{
-						Owner = this
-					};
-					progressWindow.Show();
-					StatusService.Instance.UpdateStatus("Installing FFMPEG via winget...");
-					await Task.Run(() => FFmpegLoader.InstallFfmpegViaWinget());
-					StatusService.Instance.SetProgress(100);
-					StatusService.Instance.UpdateStatus("System Ready");
-					FFmpegLoader.RefreshEnvironmentPath();
-					progressWindow.Close();
-				}
-			}
+                txtFFMPEGPath.Text = "FFMPEG: Installed";
+            }
+            else
+            {
+                if (MessageBox.Show("FFMPEG not found in system PATH. Install via winget now?",
+                "FFMPEG Missing", MessageBoxButton.YesNo, MessageBoxImage.Question) ==
+                MessageBoxResult.Yes)
+                {
+                    ProgressWindow progressWindow = new ProgressWindow
+                    {
+                        Owner = this
+                    };
+                    progressWindow.Show();
+                    StatusService.Instance.UpdateStatus("Installing FFMPEG via winget...");
+                    await Task.Run(() => FFmpegLoader.InstallFfmpegViaWinget());
+                    StatusService.Instance.SetProgress(100);
+                    StatusService.Instance.UpdateStatus("System Ready");
+                    FFmpegLoader.RefreshEnvironmentPath();
+                    progressWindow.Close();
+                }
+            }
 		}
 
         private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)

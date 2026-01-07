@@ -1,5 +1,4 @@
 ﻿using ExperimentASR.Services;
-using System.Linq;
 using System.Windows;
 
 namespace ExperimentASR.Views

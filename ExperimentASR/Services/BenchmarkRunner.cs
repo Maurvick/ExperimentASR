@@ -1,11 +1,11 @@
-﻿using ExperimentASR.Services;
+﻿using ExperimentASR.Models;
 using System.Diagnostics;
 
-namespace ExperimentASR.Models
+namespace ExperimentASR.Services
 {
-    public class BenchmarkRunner
+    public static class BenchmarkRunner
     {
-        public async Task<BenchmarkResult> RunEngineBenchmarkAsync(AsrEngine engine, IEnumerable<TestItem> testItems)
+        public static async Task<BenchmarkResult> RunEngineBenchmarkAsync(AsrEngine engine, IEnumerable<TestItem> testItems)
         {
             double totalWer = 0;
             long totalTime = 0;

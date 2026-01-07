@@ -1,9 +1,6 @@
 ﻿using ExperimentASR.Models;
 using ExperimentASR.Models.Transcription;
-using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Text;
 
 namespace ExperimentASR.Services
 {

@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Text;
-using ExperimentASR.Models;
+﻿using ExperimentASR.Models;
 using ExperimentASR.Services.Engines;
 
 namespace ExperimentASR.Services
@@ -14,7 +10,6 @@ namespace ExperimentASR.Services
 	/// </summary>
 	public class EngineManager
     {
-		// TODO: Duplicate of EngineSetupService?
 		private List<AsrEngine> _engines = new();
 
 		public List<AsrEngine> AvailableEngines
@@ -23,36 +18,14 @@ namespace ExperimentASR.Services
 			protected set { _engines = value; }
 		}
 
-
-		private string AsrEngineFolder = "SpeechRecognition";
-
-		private bool isWhisperExists = false;
-		private bool isVoskExists = false;
-		private bool isSileroExists = false;
-
 		public EngineManager()
 		{
-			if (!Directory.Exists(AsrEngineFolder))
-			{
-				Directory.CreateDirectory(AsrEngineFolder);
-			}
-
 			_engines.AddRange(
 			[
 				new WhisperEngine(),
+				new SileroEngine(),
+                new VoskEngine(),
 			]);
-		}
-
-		public void CheckAvailableEngines() 
-		{
-			if (Directory.Exists(Path.Combine(AsrEngineFolder, "whisper-bin-x64"))) 
-			{ 
-
-			}
-			else
-			{
-
-			}
 		}
 	}
 }

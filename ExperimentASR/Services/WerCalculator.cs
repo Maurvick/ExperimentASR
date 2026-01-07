@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace ExperimentASR.Services
+﻿namespace ExperimentASR.Services
 {
 	// TODO: Implement the Levenshtein distance algorithm to compute WER accurately.
 	public static class WerCalculator
