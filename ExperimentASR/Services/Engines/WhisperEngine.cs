@@ -1,6 +1,7 @@
 ﻿using System.Diagnostics;
+using ExperimentASR.Models;
 
-namespace ExperimentASR.Models
+namespace ExperimentASR.Services.Engines
 {
     public class WhisperEngine : AsrEngine
     {

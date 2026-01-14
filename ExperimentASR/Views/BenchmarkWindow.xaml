@@ -26,7 +26,7 @@ CornerRadius="8" Padding="16" Margin="10,10,605,10">
 				<TextBlock x:Name="blockAccuracyWer" Text="Accuracy (WER):" Margin="0,20,0,0"/>
 				<TextBlock x:Name="blockAccuracyPercent" Text="-- %" FontSize="20" Foreground="#4CAF50"/>
 				<Grid Height="100">
-					<Button x:Name="btnBenchmark" Content="Benchmark" Click="btnBenchmark_Click" Margin="10,10,0,0" VerticalAlignment="Top"/>
+					<Button x:Name="btnBenchmark" Content="Benchmark" Click="BtnBenchmark_Click" Margin="10,10,0,0" VerticalAlignment="Top"/>
 				</Grid>
 			</StackPanel>
 		</Border>

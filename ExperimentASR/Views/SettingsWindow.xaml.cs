@@ -78,5 +78,15 @@ namespace ExperimentASR.Views
 
 			txtAudioLanguage.Text = _settings.AudioLanguage;
         }
-    }
+
+        private void BtnOpenWhisperFolder_Click(object sender, RoutedEventArgs e)
+        {
+			// Open the folder where whisper models are stored
+		}
+
+		private void BtnOpenVoskFolder_Click(object sender, RoutedEventArgs e)
+        {
+			// Open the folder where vosk models are stored
+		}
+	}
 }

@@ -64,7 +64,7 @@ namespace ExperimentASR.Services
                         break;
                     }
 
-                    currentJob.Result = result.Transcript;
+                    currentJob.Result = result.Text;
                     currentJob.Status = result.Message;
                 }
 

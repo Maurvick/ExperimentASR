@@ -46,7 +46,7 @@
 					</StackPanel>
 
 					<StackPanel Grid.Column="2" Orientation="Horizontal" HorizontalAlignment="Right">
-						<TextBlock x:Name="textAsrLocation" Text="ASR path" VerticalAlignment="Center"/>
+						<TextBlock x:Name="textAsrLocation" Text="ASR path" VerticalAlignment="Center" Visibility="Hidden"/>
 
 						<Border Width="1" Background="#FFCCCCCC" Margin="10,2"/>
 
@@ -71,27 +71,18 @@
 			<MenuItem Header="_File">
 				<MenuItem Header="_Import" />
 				<Separator />
-				<MenuItem Header="_Exit" Click="menuExit_Click" />
-			</MenuItem>
-
-			<MenuItem Header="_Edit">
-				<MenuItem Header="_Undo" />
-				<MenuItem Header="_Redo" />
-				<Separator />
-				<MenuItem Header="_Cut" />
-				<MenuItem Header="_Copy" />
-				<MenuItem Header="_Paste" />
+				<MenuItem Header="_Exit" Click="MenuExit_Click" />
 			</MenuItem>
 
 			<MenuItem Header="_Tools" >
-				<MenuItem Header="_Settings" Click="menuSettings_Click" />
-				<MenuItem Header="_Benchmark" Click="menuBenchmark_Click" />
-				<MenuItem Header="_Download Media" Click="menuVideoDownloader_Click"/>
-				<MenuItem Header="_Logs" Click="menuLogs_Click"/>
+				<MenuItem Header="_Settings" Click="MenuSettings_Click" />
+				<MenuItem Header="_Benchmark" Click="MenuBenchmark_Click" />
+				<MenuItem Header="_Download Media" Click="MenuVideoDownloader_Click"/>
+				<MenuItem Header="_Logs" Click="MenuLogs_Click"/>
 			</MenuItem>
 
 			<MenuItem Header="_Help">
-				<MenuItem Header="_About" Click="menuAbout_Click" />
+				<MenuItem Header="_About" Click="MenuAbout_Click" />
 			</MenuItem>
 		</Menu>
 
@@ -126,7 +117,7 @@
 							<ColumnDefinition Width="Auto"/>
 						</Grid.ColumnDefinitions>
 						<TextBox x:Name="txtAudioFilePath" IsReadOnly="True" VerticalContentAlignment="Center"/>
-						<Button x:Name="btnFileSelect" Grid.Column="1" Content="📁" Width="40" Margin="5,0,0,0" Click="SelectFile_Click"/>
+						<Button x:Name="btnFileSelect" Grid.Column="1" Content="📁" Width="40" Margin="5,0,0,0" Click="BtnSelectFile_Click"/>
 					</Grid>
 
 					<StackPanel VerticalAlignment="Stretch">
@@ -143,7 +134,9 @@
 						<StackPanel Orientation="Horizontal" Margin="0,0,0,10"/>
 
 						<TextBlock x:Name="blockQueue" Text="Transcription Queue" Margin="0,0,0,10" Grid.Row="0" FontSize="16"/>
-						<DataGrid x:Name="QueueGrid" Grid.Row="1" AutoGenerateColumns="False" IsReadOnly="True" Margin="-10,0,10,0">
+						<DataGrid x:Name="QueueGrid" Grid.Row="1" AutoGenerateColumns="False" 
+							IsReadOnly="True" Margin="-10,0,10,0" 
+							ToolTip="Displays current audio files queued for transcription">
 							<DataGrid.Columns>
 								<DataGridTextColumn Header="File Name" Binding="{Binding FileName}" Width="100"/>
 								<DataGridTextColumn Header="Status" Binding="{Binding Status}" Width="100"/>
@@ -175,11 +168,10 @@
 					</ScrollViewer>
 
 					<StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,10,0,0">
-						<Button x:Name="btnCopy" Content="Copy" Margin="0,0,5,0" Click="btnCopy_Click"/>
-						<Button x:Name="btnSaveTxt" Content="Save TXT" Margin="0,0,5,0" Click="btnSaveTxt_Click"/>
-						<Button x:Name="btnSaveSrt" Content="Save SRT" Click="btnSaveSrt_Click" IsEnabled="False"/>
-						<Button x:Name="btnSummarizeText" Content="Summarize"  Margin="5,0,0,0" 
-                        IsEnabled="False" Click="btnSummarizeText_Click"></Button>
+						<Button x:Name="btnCopy" Content="Copy" Margin="0,0,5,0" 
+							Click="BtnCopyText_Click" ToolTip="Copies transcription to your text buffer"/>
+						<Button x:Name="btnSaveTxt" Content="Save TXT" Margin="0,0,5,0" 
+						Click="BtnSaveTxt_Click" ToolTip="Opens file dialog to save transcript locally"/>
 					</StackPanel>
 				</Grid>
 			</Border>

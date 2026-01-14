@@ -117,7 +117,7 @@ namespace ExperimentASR.Tests.Services
 
             // Assert
             result.Status.Should().Be("success"); // Your logic normalizes "ok" to "success"
-            result.Transcript.Should().Be("Hello world");
+            result.Text.Should().Be("Hello world");
         }
 
         [Fact]
@@ -135,7 +135,7 @@ namespace ExperimentASR.Tests.Services
 
             // Assert
             result.Status.Should().Be("success");
-            result.Transcript.Should().Be("Testing casing");
+            result.Text.Should().Be("Testing casing");
         }
 
         [Fact]

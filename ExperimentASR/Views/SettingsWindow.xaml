@@ -3,12 +3,13 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
 		xmlns:ui="http://schemas.modernwpf.com/2019"
 		ui:WindowHelper.UseModernWindowStyle="True"
-        Title="Settings" Height="320" Width="360" WindowStartupLocation="CenterOwner" ResizeMode="NoResize">
+        Title="Settings" Height="350" Width="360" WindowStartupLocation="CenterOwner" ResizeMode="NoResize">
     <Grid Margin="12">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
 			<RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
+			<RowDefinition Height="Auto"/>
 			<RowDefinition Height="Auto"/>
 			<RowDefinition Height="Auto"/>
 		</Grid.RowDefinitions>
@@ -33,7 +34,7 @@
 			</ComboBox>
 		</StackPanel>
 
-		<StackPanel Orientation="Horizontal" Grid.Row="3" Margin="0,0,0,8">
+		<StackPanel Orientation="Horizontal" Grid.Row="2" Margin="0,0,0,8">
 			<TextBlock Width="120" VerticalAlignment="Center">Implementation:</TextBlock>
 			<ComboBox x:Name="comboModelImplementation" Width="200">
 				<ComboBoxItem Tag="native" Content="Native (.NET) Libraries"/>
@@ -41,17 +42,28 @@
 			</ComboBox>
 		</StackPanel>
 
-		<StackPanel Orientation="Horizontal" Grid.Row="2" Margin="0,0,0,8">
+		<StackPanel Orientation="Horizontal" Grid.Row="3" Margin="0,0,0,8">
 			<TextBlock Width="120" VerticalAlignment="Center">Audio language:</TextBlock>
 			<TextBox x:Name="txtAudioLanguage" Width="200" Height="90" />
 		</StackPanel>
 
-		<StackPanel Grid.Row="4" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,8,0,0">
-            <Button x:Name="btnReset" Width="80" Margin="0,0,8,0" Click="BtnReset_Click">Reset</Button>
-            <Button x:Name="btnCancel" Width="80" Margin="0,0,8,0" Click="BtnCancel_Click">Cancel</Button>
-            <Button x:Name="btnSave" Width="80" Click="BtnSave_Click">Save</Button>
-        </StackPanel>
+		<StackPanel Orientation="Horizontal" Grid.Row="4" Margin="0,0,0,8">
+			<TextBlock Width="120" VerticalAlignment="Center" FontSize="10">
+				Whisper version: None
+			</TextBlock>
+			<Button x:Name="BtnOpenWhisperFolder" Grid.Column="1" Content="📁" 
+				Width="40" Margin="5,0,0,0" Click="BtnOpenWhisperFolder_Click"/>
+			<TextBlock Width="120" Margin="5,0,0,0" VerticalAlignment="Center" FontSize="10">
+				Vosk version: None
+			</TextBlock>
+			<Button x:Name="BtnOpenVoskFolder" Grid.Column="1" Content="📁" 
+				Width="40" Margin="5,0,0,0" Click="BtnOpenVoskFolder_Click"/>
+		</StackPanel>
 
-        <!---TODO: I need to show Whisper location here with ability to open its location -->
-    </Grid>
+		<StackPanel Grid.Row="5" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,8,0,0">
+			<Button x:Name="btnReset" Width="80" Margin="0,0,8,0" Click="BtnReset_Click">Reset</Button>
+			<Button x:Name="btnCancel" Width="80" Margin="0,0,8,0" Click="BtnCancel_Click">Cancel</Button>
+			<Button x:Name="btnSave" Width="80" Click="BtnSave_Click">Save</Button>
+		</StackPanel>
+	</Grid>
 </Window>

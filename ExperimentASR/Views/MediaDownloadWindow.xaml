@@ -31,10 +31,16 @@
 
 		<StackPanel Grid.Row="1" Margin="0,0,0,16">
 			<TextBlock Text="Source URL" Margin="0,0,0,8"/>
-			<TextBox x:Name="TxtUrl"
+			<StackPanel Orientation="Horizontal">
+				<TextBox x:Name="TxtUrl"
 					 TabIndex="0"
                      ui:ControlHelper.PlaceholderText="Paste YouTube or direct video link here..."
-                     FontFamily="Consolas"/>
+                     FontFamily="Consolas" Width="595"/>
+				<ComboBox x:Name="ComboQuality" Margin="5,0,0,0" Height="33">
+					<ComboBoxItem Content="Youtube" IsSelected="True"/>
+					<ComboBoxItem Content="Like anything other..." IsEnabled="False"/>
+				</ComboBox>
+			</StackPanel>
 		</StackPanel>
 
 		<StackPanel Grid.Row="2" Margin="0,0,0,16">

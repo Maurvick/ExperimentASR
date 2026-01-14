@@ -4,7 +4,7 @@
     {
         public string? Status { get; set; }
         public string? Message { get; set; }
-        public string? Transcript { get; set; }
+        public string? Text { get; set; }
 
 		// This is crucial for fixing timestamps
 		public List<Segment> Segments { get; set; } = new List<Segment>();

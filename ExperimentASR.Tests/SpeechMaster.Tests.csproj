@@ -16,7 +16,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\ExperimentASR\ExperimentASR.csproj" />
+    <ProjectReference Include="..\ExperimentASR\SpeechMaster.csproj" />
   </ItemGroup>
 
   <ItemGroup>

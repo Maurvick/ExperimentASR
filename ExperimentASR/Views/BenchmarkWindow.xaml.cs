@@ -1,6 +1,5 @@
 ﻿using ExperimentASR.Models;
 using ExperimentASR.Services;
-using ExperimentASR.Services.Engines;
 using System.Collections.ObjectModel;
 using System.Windows;
 
@@ -19,7 +18,7 @@ namespace ExperimentASR.Views
             InitializeComponent();
         }
 
-        private async void btnBenchmark_Click(object sender, RoutedEventArgs e)
+        private async void BtnBenchmark_Click(object sender, RoutedEventArgs e)
         {
 			var engines = _engineManager.AvailableEngines;
 			StatusService.Instance.UpdateStatus("Loading dataset...");

@@ -86,7 +86,7 @@ namespace ExperimentASR
             });
         }
 
-        private void SelectFile_Click(object sender, RoutedEventArgs e)
+        private void BtnSelectFile_Click(object sender, RoutedEventArgs e)
         {
             var ofd = new OpenFileDialog();
             ofd.Filter = "Audio files|*.wav;*.mp3;*.ogg;*.flac|All files|*.*";
@@ -176,12 +176,12 @@ namespace ExperimentASR
             }
         }
 
-        private void btnCancelTranscribe_Click(object sender, RoutedEventArgs e)
+        private void BtnCancelTranscribe_Click(object sender, RoutedEventArgs e)
         {
             _manager.CancelProcessing();
         }
 
-        private void btnCopy_Click(object sender, RoutedEventArgs e)
+        private void BtnCopyText_Click(object sender, RoutedEventArgs e)
         {
             if (!string.IsNullOrEmpty(boxTranscriptOutput.Text))
             {
@@ -189,7 +189,7 @@ namespace ExperimentASR
             }
         }
 
-        private void btnSaveTxt_Click(object sender, RoutedEventArgs e)
+        private void BtnSaveTxt_Click(object sender, RoutedEventArgs e)
         {
             var sfd = new SaveFileDialog
             {
@@ -201,24 +201,12 @@ namespace ExperimentASR
             }
         }
 
-		// TODO: REMOVE THIS METHOD IF NOT NEEDED
-		private void btnSaveSrt_Click(object sender, RoutedEventArgs e)
-        {
-
-        }
-
-        private void btnSummarizeText_Click(object sender, RoutedEventArgs e)
-        {
-
-        }
-
-		// Dummy method to apply settings to UI
 		private void ApplySettingsToUI()
         {
- 
-        }
+			// Dummy method to apply settings to UI
+		}
 
-        private async Task DownloadWhisper()
+		private async Task DownloadWhisper()
         {
             // Disable UI interactions while downloading
             IsEnabled = false;
@@ -307,12 +295,12 @@ namespace ExperimentASR
             _transcribeSerivce.TranscriptionFinished -= TranscribeService_TranscriptionFinished;
 		}
 
-        private void menuExit_Click(object sender, RoutedEventArgs e)
+        private void MenuExit_Click(object sender, RoutedEventArgs e)
         {
             Application.Current.Shutdown();
         }
 
-        private void menuBenchmark_Click(object sender, RoutedEventArgs e)
+        private void MenuBenchmark_Click(object sender, RoutedEventArgs e)
         {
             BenchmarkWindow benchmarkWindow = new BenchmarkWindow
             {
@@ -321,7 +309,7 @@ namespace ExperimentASR
             benchmarkWindow.ShowDialog();
         }
 
-        private void menuVideoDownloader_Click(object sender, RoutedEventArgs e)
+        private void MenuVideoDownloader_Click(object sender, RoutedEventArgs e)
         {
             MediaDownloadWindow videoDownloadWindow = new MediaDownloadWindow
 			{
@@ -330,7 +318,7 @@ namespace ExperimentASR
             videoDownloadWindow.ShowDialog();
         }
 
-		private void menuSettings_Click(object sender, RoutedEventArgs e)
+		private void MenuSettings_Click(object sender, RoutedEventArgs e)
         {
 			// Initialize your other window (ensure you have created 'DetailsWindow.xaml')
 			var settingsWindow = new SettingsWindow(_settingsManager)
@@ -346,7 +334,7 @@ namespace ExperimentASR
 			}
 		}
 
-		private void menuLogs_Click(object sender, RoutedEventArgs e)
+		private void MenuLogs_Click(object sender, RoutedEventArgs e)
         {
             try
             {
@@ -359,7 +347,7 @@ namespace ExperimentASR
             }
         }
 
-        private void menuAbout_Click(object sender, RoutedEventArgs e)
+        private void MenuAbout_Click(object sender, RoutedEventArgs e)
         {
             AboutWindow aboutWindow = new AboutWindow
             {
