@@ -1,35 +1,65 @@
-﻿using ExperimentASR.Models;
+﻿using SpeechMaster.Models;
+using SpeechMaster.Models.Transcription;
 using System.Diagnostics;
+using System.Windows.Documents;
 
-namespace ExperimentASR.Services
+namespace SpeechMaster.Services
 {
-    public static class BenchmarkRunner
+    public class BenchmarkRunner
     {
-        public static async Task<BenchmarkResult> RunEngineBenchmarkAsync(AsrEngine engine, IEnumerable<AudioReferenceItem> testItems)
+        private readonly SqliteService _sqlService = new();
+        public async Task<List<BenchmarkResult>> RunBenchmarkAsync(List<IAsrEngine> engines, List<TestItem> testItems)
         {
-            double totalWer = 0;
-            long totalTime = 0;
-            int count = 0;
+            var results = new List<BenchmarkResult>();
 
-            foreach (var item in testItems)
+            foreach (var engine in engines)
             {
-                var stopwatch = Stopwatch.StartNew();
-                var hypothesis = await engine.TranscribeAsync(item.AudioPath);
-                stopwatch.Stop();
+                double totalWer = 0, totalCer = 0, totalRtf = 0;
+                int count = 0;
 
-                var wer = WerCalculator.CalculateWer(item.ReferenceText, hypothesis);
-                totalWer += wer;
-                totalTime += stopwatch.ElapsedMilliseconds;
-                count++;
+                await Parallel.ForEachAsync(testItems, async (item, ct) =>
+                {
+                    var stopwatch = Stopwatch.StartNew();
+                    var hypothesis = await engine.TranscribeAsync(item.AudioPath);
+                    stopwatch.Stop();
+
+                    // Нормалізація текстів перед метриками
+                    string normRef = UkrainianNormalizer.Normalize(item.ReferenceText);
+                    string normHyp = UkrainianNormalizer.Normalize(hypothesis.Text);
+
+                    double wer = WerCalculator.CalculateWer(normRef, normHyp);
+                    double cer = WerCalculator.CalculateCer(normRef, normHyp);
+                    double rtf = stopwatch.Elapsed.TotalSeconds / item.Duration;
+
+                    // Збереження нормалізованого тексту в історії
+                    await _historyService.SaveTranscriptionAsync(
+                        new TranscriptionResult(normHyp, hypothesis.Segments),
+                        engine.Name,
+                        item.AudioPath,
+                        item.Duration,
+                        wer,
+                        rtf);
+
+                    totalWer += wer;
+                    totalCer += cer;
+                    totalRtf += rtf;
+                    count++;
+                });
+
+                results.Add(new BenchmarkResult
+                {
+                    ModelName = engine.Name,
+                    AverageWer = totalWer / count,
+                    AverageCer = totalCer / count,
+                    AverageRtf = totalRtf / count,
+                    TestCount = count
+                });
             }
 
-            return new BenchmarkResult
-            {
-                ModelName = engine.Name,
-                AverageWer = totalWer / count,
-                AverageRtf = (double)totalTime / (testItems.Sum(x => AudioHelper.GetAudioFileDuration(x.AudioPath))),
-                TestsCount = count
-            };
+            // Збереження результатів бенчмарку
+            await _sqlService.SaveBenchmarkAsync("Common Voice uk", results);
+
+            return results;
         }
     }
 }

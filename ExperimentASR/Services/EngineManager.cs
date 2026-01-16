@@ -1,7 +1,7 @@
-﻿using ExperimentASR.Models;
-using ExperimentASR.Services.Engines;
+﻿using ExperimentASR.Services.Engines;
+using SpeechMaster.Models;
 
-namespace ExperimentASR.Services
+namespace SpeechMaster.Services
 {
 	/// <summary>
 	/// Manages ASR engines within the application.

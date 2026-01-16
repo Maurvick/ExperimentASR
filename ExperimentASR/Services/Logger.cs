@@ -1,7 +1,7 @@
 ﻿using System.IO;
 using System.Text;
 
-namespace ExperimentASR.Services
+namespace SpeechMaster.Services
 {
 	public class Logger
 	{

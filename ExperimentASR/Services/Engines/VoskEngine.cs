@@ -1,9 +1,9 @@
-﻿using ExperimentASR.Models;
+﻿using SpeechMaster.Models;
 using System.IO;
 using System.Text.Json;
 using Vosk;
 
-namespace ExperimentASR.Services.Engines
+namespace SpeechMaster.Services.Engines
 {
     public class VoskEngine: AsrEngine, IDisposable
     {

@@ -1,8 +1,8 @@
-﻿using ExperimentASR.Models;
+﻿using SpeechMaster.Models.Transcription;
 using System.IO;
 using System.Text.Json;
 
-namespace ExperimentASR.Services
+namespace SpeechMaster.Services
 {
     public class TranscribeService
     {
@@ -48,7 +48,7 @@ namespace ExperimentASR.Services
 			var combinedResult = new TranscriptionResult
 			{
 				Status = "success",
-				Transcript = "",
+				Text = "",
 				Segments = new List<Segment>()
 			};
 
@@ -97,7 +97,7 @@ namespace ExperimentASR.Services
 						double timeOffset = i * 300.0;
 
 						// Append text
-						combinedResult.Transcript += " " + chunkResult.Transcript;
+						combinedResult.Text += " " + chunkResult.Text;
 
 						// Append Segments with adjusted timestamps
 						if (chunkResult.Segments != null)
@@ -176,7 +176,7 @@ namespace ExperimentASR.Services
 
                 // Ensure fields are not null
                 result.Message ??= "";
-                result.Transcript ??= "";
+                result.Text ??= "";
 
                 // If deserialization worked but status is missing, flag it
                 if (string.IsNullOrEmpty(result.Status))

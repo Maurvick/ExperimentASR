@@ -1,10 +1,11 @@
 ﻿using System.Diagnostics;
 using System.IO;
 using System.Windows;
-using ExperimentASR.Services;
 using ExperimentASR.Views;
 using ExperimentASR.Windows;
 using Microsoft.Win32;
+using SpeechMaster.Models.Transcription;
+using SpeechMaster.Services;
 
 namespace ExperimentASR
 {
@@ -74,7 +75,7 @@ namespace ExperimentASR
             });
         }
 
-        private void TranscribeService_TranscriptionFinished(object? sender, Models.TranscriptionFinishedEventArgs e)
+        private void TranscribeService_TranscriptionFinished(object? sender, TranscriptionFinishedEventArgs e)
         {
             // Marshals to UI thread and stop progress
             Dispatcher.Invoke(() =>

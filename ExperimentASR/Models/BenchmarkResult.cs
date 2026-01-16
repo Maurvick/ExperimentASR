@@ -1,4 +1,4 @@
-﻿namespace ExperimentASR.Models
+﻿namespace SpeechMaster.Models
 {
     public class BenchmarkResult
     {

@@ -2,7 +2,7 @@
 using System.IO.Compression;
 using System.Net.Http;
 
-namespace ExperimentASR.Services
+namespace SpeechMaster.Services
 {
 	public class EngineSetupService
 	{

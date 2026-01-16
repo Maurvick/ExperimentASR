@@ -9,7 +9,7 @@
 		ui:WindowHelper.UseModernWindowStyle="True"
 		WindowStartupLocation="CenterOwner" ResizeMode="CanMinimize"
 		KeyboardNavigation.TabNavigation="Cycle"
-        Title="Download Media" Height="450" Width="800">
+        Title="Download Media" Height="480" Width="800">
 
 	<Grid Margin="24">
 		<Grid.RowDefinitions>
@@ -17,8 +17,8 @@
 			<RowDefinition Height="Auto"/>
 			<RowDefinition Height="Auto"/>
 			<RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
 			<RowDefinition Height="*"/>
-			<RowDefinition Height="Auto"/>
 		</Grid.RowDefinitions>
 
 		<StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,24">
@@ -38,7 +38,7 @@
                      FontFamily="Consolas" Width="595"/>
 				<ComboBox x:Name="ComboQuality" Margin="5,0,0,0" Height="33">
 					<ComboBoxItem Content="Youtube" IsSelected="True"/>
-					<ComboBoxItem Content="Like anything other..." IsEnabled="False"/>
+					<ComboBoxItem Content="HuggingFace" IsEnabled="False"/>
 				</ComboBox>
 			</StackPanel>
 		</StackPanel>
@@ -69,7 +69,7 @@
 
 		<StackPanel Grid.Row="4" VerticalAlignment="Center">
 			<Grid Margin="0,0,0,8">
-				<TextBlock x:Name="TxtStatus" Text="Ready" />
+				<TextBlock x:Name="TxtStatus" Text="Standby" />
 				<TextBlock x:Name="TxtProgressPercent" Text="0%" HorizontalAlignment="Right" />
 			</Grid>
 			<ProgressBar x:Name="PbDownload" Maximum="100"/>

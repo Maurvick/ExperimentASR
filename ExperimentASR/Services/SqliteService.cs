@@ -1,12 +1,11 @@
-﻿using System;
-using System.IO;
+﻿using System.IO;
 using System.Text;
 using System.Text.Json;
-using ExperimentASR.Models;
 using Microsoft.EntityFrameworkCore;
 using SpeechMaster.Models;
+using SpeechMaster.Models.Transcription;
 
-namespace ExperimentASR.Services
+namespace SpeechMaster.Services
 {
 	class SqliteService
 	{

@@ -3,10 +3,10 @@ using System.IO;
 using System.Reflection;
 using Xunit;
 using FluentAssertions;
-using ExperimentASR.Services;
-using ExperimentASR.Models;
+using SpeechMaster.Services;
+using SpeechMaster.Models.Transcription;
 
-namespace ExperimentASR.Tests.Services
+namespace SpeechMaster.Tests
 {
     public class TranscribeServiceTests
     {

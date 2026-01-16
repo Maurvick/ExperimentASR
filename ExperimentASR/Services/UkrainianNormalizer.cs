@@ -1,27 +1,39 @@
 ﻿using System.Text.RegularExpressions;
 
-namespace ExperimentASR.Services
+namespace SpeechMaster.Services
 {
-	// TODO: This is need to be improved further
+    // TODO: This is need to be improved further
     // based on specific normalization rules for Ukrainian text.
-	public static class UkrainianNormalizer
+    public static class UkrainianNormalizer
     {
-        private static readonly Regex Punctuation = new Regex(@"[‚„«»“”'""…]");
-        private static readonly Regex MultipleSpaces = new Regex(@"\s+");
+        private static readonly Regex Punctuation = new(@"[.,!?;:""„”«»—–-]", RegexOptions.Compiled);
+        private static readonly Regex Apostrophe = new(@"['’]", RegexOptions.Compiled); // видаляємо апостроф як розділювач м'якості
+        private static readonly Regex SoftSign = new(@"([дтзсцлншжч])ь", RegexOptions.Compiled | RegexOptions.IgnoreCase); // спрощуємо м'якість
+        private static readonly Regex DoubleVowels = new(@"ії", RegexOptions.IgnoreCase); // 'ії' → 'ї' (типова помилка ASR)
+        private static readonly Regex MultipleSpaces = new(@"\s+", RegexOptions.Compiled);
 
         public static string Normalize(string text)
         {
-            if (string.IsNullOrEmpty(text)) return text;
+            if (string.IsNullOrWhiteSpace(text)) return string.Empty;
 
-            text = text.ToLowerInvariant()
-                       .Replace("’", "'")
-                       .Replace("´", "'")
-                       .Replace("`", "'")
-                       .Replace("ґ", "г"); // або залишайте ґ — залежить від моделі
+            text = text.ToLowerInvariant();
 
+            // 1. Видаляємо апостроф (якщо не є частиною слова)
+            text = Apostrophe.Replace(text, "");
+
+            // 2. Спрощуємо м'якість (палаталізація): 'дь' → 'д', 'ть' → 'т' тощо
+            text = SoftSign.Replace(text, "$1");
+
+            // 3. Нормалізація 'ї/і' (подвійні голосні → одна)
+            text = DoubleVowels.Replace(text, "ї");
+
+            // 4. Видаляємо пунктуацію
             text = Punctuation.Replace(text, "");
-            text = MultipleSpaces.Replace(text, " ");
-            return text.Trim();
+
+            // 5. Нормалізуємо пробіли
+            text = MultipleSpaces.Replace(text, " ").Trim();
+
+            return text;
         }
     }
 }

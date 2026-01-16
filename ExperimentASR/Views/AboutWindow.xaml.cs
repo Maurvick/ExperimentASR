@@ -20,7 +20,7 @@ namespace ExperimentASR.Views
             TxtVersion.Text = $"Version: {version}";
 		} 
 
-        private void Hyperlink_RequestNavigate(object sender, System.Windows.Navigation.RequestNavigateEventArgs e)
+        private void LinkProjectRepo_RequestNavigate(object sender, System.Windows.Navigation.RequestNavigateEventArgs e)
         {
             string url = "https://github.com/Maurvick/ExperimentASR";
 			Process.Start(new ProcessStartInfo(url) { UseShellExecute = true });
@@ -29,6 +29,6 @@ namespace ExperimentASR.Views
         private void BtnOk_Click(object sender, RoutedEventArgs e)
         {
             Close();
-		}
-	}
+		}   
+    }
 }

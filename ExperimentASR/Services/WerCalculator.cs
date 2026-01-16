@@ -1,4 +1,4 @@
-﻿namespace ExperimentASR.Services
+﻿namespace SpeechMaster.Services
 {
 	// TODO: Implement the Levenshtein distance algorithm to compute WER accurately.
 	public static class WerCalculator

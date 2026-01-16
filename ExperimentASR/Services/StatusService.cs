@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace ExperimentASR.Services
+namespace SpeechMaster.Services
 {
     public class StatusService
     {

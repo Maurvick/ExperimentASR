@@ -57,7 +57,9 @@
 			<StackPanel Grid.Column="0" VerticalAlignment="Center">
 				<TextBlock Text="© 2026 Belinsky Andrii" FontSize="12" Foreground="#888"/>
 				<TextBlock FontSize="12">
-                    <Hyperlink NavigateUri="https://github.com/maulwin/ExperimentAsr" RequestNavigate="Hyperlink_RequestNavigate">
+                    <Hyperlink x:Name="LinkProjectRepo" 
+                               RequestNavigate="LinkProjectRepo_RequestNavigate" 
+                               Click="LinkProjectRepo_Click">
                         Visit Project Repository
                     </Hyperlink>
 				</TextBlock>

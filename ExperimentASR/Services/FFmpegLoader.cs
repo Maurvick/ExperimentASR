@@ -1,6 +1,6 @@
 ﻿using System.Diagnostics;
 
-namespace ExperimentASR.Services
+namespace SpeechMaster.Services
 {
 	public class FFmpegLoader
 	{

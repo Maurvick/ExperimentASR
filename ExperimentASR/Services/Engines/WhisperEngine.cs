@@ -1,7 +1,7 @@
 ﻿using System.Diagnostics;
-using ExperimentASR.Models;
+using SpeechMaster.Models;
 
-namespace ExperimentASR.Services.Engines
+namespace SpeechMaster.Services.Engines
 {
     public class WhisperEngine : AsrEngine
     {

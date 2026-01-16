@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace ExperimentASR.Tests
+namespace SpeechMaster.Tests
 {
     internal class AsrCliTests
     {

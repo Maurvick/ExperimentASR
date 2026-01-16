@@ -31,6 +31,6 @@ namespace SpeechMaster.Models
 		public int Id { get; set; }
 		public DateTime DateTime { get; set; }
 		public string DatasetName { get; set; }
-		public string ResultsJson { get; set; } // JSON з результатами моделей
+		public string ResultsJson { get; set; }
 	}
 }

@@ -1,7 +1,7 @@
 ﻿using System.ComponentModel;
 using System.Runtime.CompilerServices;
 
-namespace ExperimentASR.Models.Transcription
+namespace SpeechMaster.Models.Transcription
 {
     public class TranscriptionJob : INotifyPropertyChanged
     {

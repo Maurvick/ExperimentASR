@@ -1,5 +1,5 @@
-﻿using ExperimentASR.Models;
-using ExperimentASR.Services;
+﻿using SpeechMaster.Models;
+using SpeechMaster.Services;
 using System.Collections.ObjectModel;
 using System.Windows;
 

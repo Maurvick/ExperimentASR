@@ -2,7 +2,7 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
-namespace ExperimentASR.Services
+namespace SpeechMaster.Services
 {
     public class SettingsManager
     {

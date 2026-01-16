@@ -1,8 +1,7 @@
-﻿using ExperimentASR.Models;
-using ExperimentASR.Models.Transcription;
+﻿using SpeechMaster.Models.Transcription;
 using System.Collections.ObjectModel;
 
-namespace ExperimentASR.Services
+namespace SpeechMaster.Services
 {
     public class TranscriptionQueueManager
     {

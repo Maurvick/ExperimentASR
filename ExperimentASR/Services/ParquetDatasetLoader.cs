@@ -3,7 +3,7 @@ using Parquet;
 using Parquet.Schema;
 using System.IO;
 
-namespace ExperimentASR.Services
+namespace SpeechMaster.Services
 {
     public class ParquetDatasetLoader
     {

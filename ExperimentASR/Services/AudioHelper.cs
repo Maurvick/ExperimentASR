@@ -1,6 +1,6 @@
 ﻿using NAudio.Wave;
 
-namespace ExperimentASR.Models
+namespace SpeechMaster.Services
 {
     public class AudioHelper
     {
