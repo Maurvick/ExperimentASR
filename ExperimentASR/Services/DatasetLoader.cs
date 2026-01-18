@@ -7,7 +7,7 @@ namespace SpeechMaster.Services
 {
     public class DatasetLoader
     {
-        private readonly List<AudioReferenceItem> _testItems = new();
+        private readonly List<TestItem> _testItems = new();
 
         public async Task LoadDatasetAsync(string path)
         {
@@ -33,7 +33,7 @@ namespace SpeechMaster.Services
 
             foreach (var sample in samples)
             {
-                _testItems.Add(new AudioReferenceItem
+                _testItems.Add(new TestItem
                 {
                     AudioPath = sample.AudioPath,
                     ReferenceText = sample.Transcription
@@ -41,6 +41,6 @@ namespace SpeechMaster.Services
             }
         }
 
-        public IReadOnlyList<AudioReferenceItem> TestItems => _testItems;
+        public IReadOnlyList<TestItem> TestItems => _testItems;
     }
 }

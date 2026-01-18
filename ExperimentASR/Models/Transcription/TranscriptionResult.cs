@@ -8,6 +8,12 @@
 
 		// This is crucial for fixing timestamps
 		public List<Segment> Segments { get; set; } = new List<Segment>();
+
+		public TranscriptionResult(string text, List<Segment> segments)
+		{
+			Text = text ?? throw new ArgumentNullException(nameof(text));
+			Segments = segments ?? new List<Segment>();
+		}
 	}
 
 	public class Segment

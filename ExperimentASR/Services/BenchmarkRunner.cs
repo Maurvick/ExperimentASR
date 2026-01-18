@@ -1,14 +1,20 @@
 ﻿using SpeechMaster.Models;
 using SpeechMaster.Models.Transcription;
 using System.Diagnostics;
-using System.Windows.Documents;
 
 namespace SpeechMaster.Services
 {
     public class BenchmarkRunner
     {
-        private readonly SqliteService _sqlService = new();
-        public async Task<List<BenchmarkResult>> RunBenchmarkAsync(List<IAsrEngine> engines, List<TestItem> testItems)
+		private readonly HistoryService _historyService;
+
+        public BenchmarkRunner(HistoryService historyService)
+        {
+            _historyService = historyService;
+		}
+
+		public async Task<List<BenchmarkResult>> RunBenchmarkAsync(List<IAsrEngine> engines, 
+            List<TestItem> testItems)
         {
             var results = new List<BenchmarkResult>();
 
@@ -23,7 +29,6 @@ namespace SpeechMaster.Services
                     var hypothesis = await engine.TranscribeAsync(item.AudioPath);
                     stopwatch.Stop();
 
-                    // Нормалізація текстів перед метриками
                     string normRef = UkrainianNormalizer.Normalize(item.ReferenceText);
                     string normHyp = UkrainianNormalizer.Normalize(hypothesis.Text);
 
@@ -31,7 +36,6 @@ namespace SpeechMaster.Services
                     double cer = WerCalculator.CalculateCer(normRef, normHyp);
                     double rtf = stopwatch.Elapsed.TotalSeconds / item.Duration;
 
-                    // Збереження нормалізованого тексту в історії
                     await _historyService.SaveTranscriptionAsync(
                         new TranscriptionResult(normHyp, hypothesis.Segments),
                         engine.Name,
@@ -57,7 +61,7 @@ namespace SpeechMaster.Services
             }
 
             // Збереження результатів бенчмарку
-            await _sqlService.SaveBenchmarkAsync("Common Voice uk", results);
+            await _historyService.SaveBenchmarkAsync("Common Voice uk", results);
 
             return results;
         }

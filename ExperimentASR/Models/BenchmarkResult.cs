@@ -4,7 +4,8 @@
     {
         public string ModelName { get; set; }
         public double AverageWer { get; set; }
-        public double AverageRtf { get; set; }
-        public int TestsCount { get; set; }
+        public double AverageCer { get; set; }
+		public double AverageRtf { get; set; }
+        public int TestCount { get; set; }
     }
 }

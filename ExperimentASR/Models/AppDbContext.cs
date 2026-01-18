@@ -2,15 +2,25 @@
 
 namespace SpeechMaster.Models
 {
-
 	public class AppDbContext : DbContext
 	{
 		public DbSet<TranscriptionEntry> Transcriptions { get; set; }
 		public DbSet<BenchmarkEntry> Benchmarks { get; set; }
 
-		protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+		public AppDbContext(DbContextOptions<AppDbContext> options) : base(options)
 		{
-			optionsBuilder.UseSqlite("Data Source=app_data.db");
+		}
+
+		protected override void OnModelCreating(ModelBuilder modelBuilder)
+		{
+			// Опціонально: налаштування дати як рядок ISO 8601
+			modelBuilder.Entity<TranscriptionEntry>()
+				.Property(e => e.DateTime)
+				.HasConversion(v => v.ToString("o"), v => DateTime.Parse(v));
+
+			modelBuilder.Entity<BenchmarkEntry>()
+				.Property(e => e.DateTime)
+				.HasConversion(v => v.ToString("o"), v => DateTime.Parse(v));
 		}
 	}
 

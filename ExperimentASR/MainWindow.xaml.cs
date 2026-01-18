@@ -7,7 +7,7 @@ using Microsoft.Win32;
 using SpeechMaster.Models.Transcription;
 using SpeechMaster.Services;
 
-namespace ExperimentASR
+namespace SpeechMaster
 {
     /// <summary>
     /// Interaction logic for MainWindow.xaml
