@@ -1,35 +1,56 @@
-﻿using System;
-using System.Windows;
-using Microsoft.Extensions.DependencyInjection;
+﻿using ExperimentASR.Views;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using SpeechMaster.Models;
+using SpeechMaster.Services;
+using System.Windows;
 
-namespace ExperimentASR
+namespace SpeechMaster
 {
-    /// <summary>
-    /// Interaction logic for App.xaml
-    /// </summary>
     public partial class App : Application
     {
-        private readonly ServiceProvider _serviceProvider;
-
-        // Expose the service provider so windows/services can resolve dependencies
-        public IServiceProvider Services => _serviceProvider;
+        private readonly IHost _host;
 
         public App()
         {
-            var services = new ServiceCollection();
+            var builder = Host.CreateApplicationBuilder();
 
-            // Register EF Core DbContext with SQLite connection string
-            services.AddDbContext<AppDbContext>(options =>
-                options.UseSqlite("Data Source=app_data.db"));
+            // 1. Register DbContext (Transient allows injection into Singleton windows)
+            builder.Services.AddDbContext<AppDbContext>(options =>
+                options.UseSqlite("Data Source=app_data.db"),
+                ServiceLifetime.Transient);
 
-            _serviceProvider = services.BuildServiceProvider();
+            // 2. Register Services
+            builder.Services.AddTransient<HistoryService>();
+            builder.Services.AddTransient<BenchmarkRunner>();
+
+            // 3. Register Windows
+            builder.Services.AddSingleton<BenchmarkWindow>();
+            builder.Services.AddSingleton<MainWindow>();
+
+            // Build the host
+            _host = builder.Build();
         }
 
-        protected override void OnExit(ExitEventArgs e)
+        protected override async void OnStartup(StartupEventArgs e)
         {
-            _serviceProvider.Dispose();
+            await _host.StartAsync();
+
+            // Resolve and show the main window
+            var mainWindow = _host.Services.GetRequiredService<MainWindow>();
+            mainWindow.Show();
+
+            base.OnStartup(e);
+        }
+
+        protected override async void OnExit(ExitEventArgs e)
+        {
+            // Graceful shutdown
+            using (_host)
+            {
+                await _host.StopAsync(TimeSpan.FromSeconds(5));
+            }
             base.OnExit(e);
         }
     }

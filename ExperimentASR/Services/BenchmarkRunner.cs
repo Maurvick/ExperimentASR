@@ -36,13 +36,13 @@ namespace SpeechMaster.Services
                     double cer = WerCalculator.CalculateCer(normRef, normHyp);
                     double rtf = stopwatch.Elapsed.TotalSeconds / item.Duration;
 
-                    await _historyService.SaveTranscriptionAsync(
-                        new TranscriptionResult(normHyp, hypothesis.Segments),
-                        engine.Name,
-                        item.AudioPath,
-                        item.Duration,
-                        wer,
-                        rtf);
+                    //await _historyService.SaveTranscriptionAsync(
+                    //    new TranscriptionResult(normHyp, hypothesis.Segments),
+                    //    engine.Name,
+                    //    item.AudioPath,
+                    //    item.Duration,
+                    //    wer,
+                    //    rtf);
 
                     totalWer += wer;
                     totalCer += cer;

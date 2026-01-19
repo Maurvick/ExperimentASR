@@ -88,5 +88,15 @@ namespace ExperimentASR.Views
         {
 			// Open the folder where vosk models are stored
 		}
-	}
+
+        private void BtnDownloadWhisperModel_Click(object sender, RoutedEventArgs e)
+        {
+            // Open the Whisper model download page
+        }
+
+        private void BtnDownloadVoskModel_Click(object sender, RoutedEventArgs e)
+        {
+            // Open the Vosk model download page
+        }
+    }
 }

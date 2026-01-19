@@ -9,7 +9,7 @@
         mc:Ignorable="d"
         ui:WindowHelper.UseModernWindowStyle="True"
         TextOptions.TextFormattingMode="Display" 
-        Title="Transcription" Height="720" Width="1280" Loaded="Window_Loaded" Closing="Window_Closing">
+        Title="Transcription" Height="720" Width="1280" Loaded="Window_Loaded" Closing="Window_Closing" ResizeMode="NoResize">
 	<Window.Resources>
 		<SolidColorBrush x:Key="AccentBrush" Color="#0057B7"/>
 		<SolidColorBrush x:Key="AccentLightBrush" Color="#FFD700"/>

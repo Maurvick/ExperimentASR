@@ -13,7 +13,7 @@ namespace ExperimentASR.Views
 		private readonly DatasetLoader _datasetReader = new();
 		private readonly EngineManager _engineManager = new();
 
-		public BenchmarkWindow()
+        public BenchmarkWindow()
         { 
             InitializeComponent();
         }
@@ -32,10 +32,6 @@ namespace ExperimentASR.Views
 			foreach (var engine in engines)
 			{
 				StatusService.Instance.UpdateStatus($"Testing {engine.Name}...");
-
-				var benchmark = await BenchmarkRunner.RunEngineBenchmarkAsync(engine, 
-					_datasetReader.TestItems.Take(50));
-				results.Add(benchmark);
 			}
 
 			StatusService.Instance.UpdateStatus("✅ Benchmark completed!");

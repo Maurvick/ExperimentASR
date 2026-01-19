@@ -45,7 +45,7 @@ namespace SpeechMaster.Services
 			string tempFolder = Path.Combine(Path.GetTempPath(), "ExperimentASR_Chunks", Guid.NewGuid().ToString());
 			Directory.CreateDirectory(tempFolder);
 
-			var combinedResult = new TranscriptionResult
+			var combinedResult = new TranscriptionResult("", new List<Segment>())
 			{
 				Status = "success",
 				Text = "",
@@ -118,8 +118,8 @@ namespace SpeechMaster.Services
 			}
 			catch (Exception ex)
 			{
-				return new TranscriptionResult
-				{
+				return new TranscriptionResult("", new List<Segment>())
+                {
 					Status = "error",
 					Message = $"Segmentation failed: {ex.Message}"
 				};
@@ -139,7 +139,7 @@ namespace SpeechMaster.Services
             // 1. Handle cases where the script crashed or produced no output
             if (string.IsNullOrWhiteSpace(output))
             {
-                return new TranscriptionResult
+                return new TranscriptionResult("", new List<Segment>())
                 {
                     Status = "error",
                     Message = !string.IsNullOrWhiteSpace(error)
@@ -190,7 +190,7 @@ namespace SpeechMaster.Services
             catch (JsonException ex)
             {
                 // 5. Handle Malformed JSON
-                return new TranscriptionResult
+                return new TranscriptionResult("", new List<Segment>())
                 {
                     Status = "error",
                     Message = $"Invalid JSON format. Error: {ex.Message}\nRaw output: {output}"
@@ -225,7 +225,7 @@ namespace SpeechMaster.Services
                 }
                 catch (Exception ex)
                 {
-                    var errorResult = new TranscriptionResult
+                    var errorResult = new TranscriptionResult("", new List<Segment>())
                     {
                         Status = "error",
                         Message = $"Failed to start Python process: {ex.Message}. \nRaw python script output: {_rawPythonOutput}"
@@ -234,7 +234,7 @@ namespace SpeechMaster.Services
                     TranscriptionFinished ?.Invoke(this, new TranscriptionFinishedEventArgs(errorResult));
                     return errorResult;
                 }
-                return new TranscriptionResult
+                return new TranscriptionResult("", new List<Segment>())
                 {
                     Status = "success",
                     Message = "Transcription completed."
@@ -268,7 +268,7 @@ namespace SpeechMaster.Services
                 }
                 catch (Exception ex)
                 {
-                    var errorResult = new TranscriptionResult
+                    var errorResult = new TranscriptionResult("", new List<Segment>())
                     {
                         Status = "error",
                         Message = $"Failed to start Python process: {ex.Message}. \nRaw python script output: {_rawPythonOutput}"
@@ -278,7 +278,7 @@ namespace SpeechMaster.Services
                     return errorResult;
                 }
                 _logger.LogInfo($"Transcription completed for file: {filePath} using model: {model}");
-                return new TranscriptionResult
+                return new TranscriptionResult("", new List<Segment>())
                 {
                     Status = "success",
                     Message = "Transcription completed."
@@ -315,7 +315,7 @@ namespace SpeechMaster.Services
                 }
                 catch (Exception ex)
                 {
-                    var errorResult = new TranscriptionResult
+                    var errorResult = new TranscriptionResult("", new List<Segment>())
                     {
                         Status = "error",
                         Message = $"Failed to start Python process: {ex.Message}. \nRaw python script output: {_rawPythonOutput}"
@@ -325,7 +325,7 @@ namespace SpeechMaster.Services
                     TranscriptionFinished?.Invoke(this, new TranscriptionFinishedEventArgs(errorResult));
                     return errorResult;
                 }
-                return new TranscriptionResult
+                return new TranscriptionResult("", new List<Segment>())
                 {
                     Status = "success",
                     Message = "Transcription completed."

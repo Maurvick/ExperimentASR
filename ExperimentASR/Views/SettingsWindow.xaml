@@ -53,12 +53,12 @@
             <TextBlock Width="120" VerticalAlignment="Center" FontSize="10">
 				Whisper version: None
             </TextBlock>
-
+			
             <Button x:Name="BtnDownloadWhisperModel" Grid.Column="1" Content="Download"
-                    Width="80" Margin="0,0,0,0" Click="BtnDownloadWhisperModel_Click"/>
+                    Width="80" Margin="0,0,0,0" Click="BtnDownloadWhisperModel_Click" Visibility="Hidden"/>
 
             <Button x:Name="BtnOpenWhisperFolder" Grid.Column="1" Content="📁" 
-				Width="40" Margin="5,0,0,0" Click="BtnOpenWhisperFolder_Click"/>
+				Width="40" Margin="5,0,0,0" Click="BtnOpenWhisperFolder_Click" Visibility="Hidden"/>
         </StackPanel>
 
         <StackPanel Orientation="Horizontal" Grid.Row="5" Margin="0,0,0,8">
@@ -66,9 +66,9 @@
 				Vosk version: None
 			</TextBlock>
             <Button x:Name="BtnDownloadVoskModel" Grid.Column="1" Content="Download"
-					Width="82" Margin="0,0,0,0" Click="BtnDownloadVoskModel_Click"/>
+					Width="82" Margin="0,0,0,0" Click="BtnDownloadVoskModel_Click" Visibility="Hidden"/>
             <Button x:Name="BtnOpenVoskFolder" Grid.Column="1" Content="📁" 
-				Width="40" Margin="5,0,0,0" Click="BtnOpenVoskFolder_Click"/>
+				Width="40" Margin="5,0,0,0" Click="BtnOpenVoskFolder_Click" Visibility="Hidden"/>
         </StackPanel>
 
 
