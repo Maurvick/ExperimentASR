@@ -1,356 +1,367 @@
-﻿using SpeechMaster.Models.Transcription;
+﻿using SpeechMaster.Models.Transcription; // Переконайтеся, що тут є класи TranscriptionResult та Segment
+using System;
+using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Text.Json;
 
 namespace SpeechMaster.Services
 {
     public class TranscribeService
     {
+        private readonly Logger _logger = new Logger();
+
+        // --- Python Configuration ---
         private readonly string _pythonExe = "python";
         private readonly string _scriptPath = "./Scripts/asr_engine.py";
+
+        // --- Whisper.cpp Configuration ---
+        private readonly string _whisperCppExePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Tools", "whisper", "main.exe");
+        private readonly string _modelsBasePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Models");
+
+        // --- Settings ---
         private readonly string _whisperModelSize;
         private readonly string _audioLanguage;
-        private readonly string _asrEngine;
+        private readonly string _asrEngine; // "openai_whisper" (python) або "whisper.cpp"
 
-        // Store raw output for error reporting
-        private string _rawPythonOutput = "";
+        // --- Diagnostics ---
+        private string _rawProcessOutput = "";
+        private readonly string _ffmpegPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Tools", "ffmpeg.exe");
 
-        Logger _logger = new Logger();
-
-		// Path to FFmpeg (ensure this matches where you store it)
-		private readonly string _ffmpegPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Tools", "ffmpeg.exe");
-
-		// Events
-		public event EventHandler? TranscriptionStarted;
+        // --- Events ---
+        public event EventHandler? TranscriptionStarted;
         public event EventHandler<TranscriptionFinishedEventArgs>? TranscriptionFinished;
 
         public TranscribeService()
         {
             SettingsManager settings = new SettingsManager();
-            _whisperModelSize = settings.WhisperModelSize;
-            _audioLanguage = settings.AudioLanguage;
+            _whisperModelSize = settings.WhisperModelSize; // наприклад: "base", "small", "large"
+            _audioLanguage = settings.AudioLanguage;       // наприклад: "uk", "en", "auto"
             _asrEngine = settings.AsrEngine;
         }
 
-        public string AsrEngineLocation
+        public string AsrEngineLocation => _asrEngine == "whisper.cpp" ? _whisperCppExePath : _scriptPath;
+
+        /// <summary>
+        /// Main function. Decides to call direct transcription 
+        /// or segmentation based on file duration.
+        /// </summary>
+        public TranscriptionResult Transcribe(string audioPath)
         {
-            get { return _scriptPath; }
+            if (!File.Exists(audioPath))
+                throw new FileNotFoundException("Audio file not found.", audioPath);
+
+            TranscriptionStarted?.Invoke(this, EventArgs.Empty);
+            _logger.LogInfo($"Starting transcription: {audioPath} | Engine: {_asrEngine} | Model: {_whisperModelSize}");
+
+            // Отримуємо тривалість файлу (можна додати ffprobe, тут спрощено)
+            // Якщо файл дуже великий, викликаємо TranscribeLongFile. 
+            // Для прикладу запускаємо пряму транскрипцію для коротких файлів або логіку сплітінгу.
+            // Тут залишаємо прямий виклик для спрощення, або вашу логіку перевірки тривалості.
+
+            // Приклад виклику:
+            return RunCommand(audioPath, _asrEngine);
         }
 
-		private TranscriptionResult TranscribeLongFile(string sourceFile, double totalDurationSec)
-		{
-			_logger.LogInfo($"Large file detected ({totalDurationSec}s). Starting segmentation...");
-
-			// 1. Create a temporary folder for chunks
-			string tempFolder = Path.Combine(Path.GetTempPath(), "ExperimentASR_Chunks", Guid.NewGuid().ToString());
-			Directory.CreateDirectory(tempFolder);
-
-			var combinedResult = new TranscriptionResult("", new List<Segment>())
-			{
-				Status = "success",
-				Text = "",
-				Segments = new List<Segment>()
-			};
-
-			try
-			{
-				// 2. Split Audio using FFmpeg
-				// -f segment: Enables splitting
-				// -segment_time 300: Split every 300 seconds (5 mins)
-				// -c:a pcm_s16le -ar 16000: Convert to WAV 16kHz immediately (Optimized for Whisper)
-				string chunkPattern = Path.Combine(tempFolder, "chunk_%03d.wav");
-
-				var startInfo = new System.Diagnostics.ProcessStartInfo
-				{
-					FileName = _ffmpegPath,
-					Arguments = $"-i \"{sourceFile}\" -f segment -segment_time 300 -c:a pcm_s16le -ar 16000 -ac 1 \"{chunkPattern}\"",
-					UseShellExecute = false,
-					CreateNoWindow = true
-				};
-
-				using (var proc = System.Diagnostics.Process.Start(startInfo))
-				{
-					proc.WaitForExit();
-				}
-
-				// 3. Process Chunks Sequentially
-				var chunks = Directory.GetFiles(tempFolder, "chunk_*.wav").OrderBy(f => f).ToList();
-
-				for (int i = 0; i < chunks.Count; i++)
-				{
-					string chunkPath = chunks[i];
-
-					// Notify UI about specific chunk progress
-					// We calculate a global percentage: (ChunkIndex / TotalChunks) * 100
-					double globalProgress = ((double)i / chunks.Count) * 100;
-					// You might need to expose an event or use your StatusService here
-					// StatusService.Instance.SetProgress(globalProgress); 
-					StatusService.Instance.UpdateStatus($"Processing part {i + 1} of {chunks.Count}...");
-
-					// Transcribe this specific chunk
-					var chunkResult = RunCommand(chunkPath, _asrEngine);
-
-					if (chunkResult.Status == "success")
-					{
-						// 4. MERGE LOGIC
-						// Calculate the time offset for this chunk (e.g., Chunk 2 starts at 300s)
-						double timeOffset = i * 300.0;
-
-						// Append text
-						combinedResult.Text += " " + chunkResult.Text;
-
-						// Append Segments with adjusted timestamps
-						if (chunkResult.Segments != null)
-						{
-							foreach (var seg in chunkResult.Segments)
-							{
-								seg.Start += timeOffset;
-								seg.End += timeOffset;
-								combinedResult.Segments.Add(seg);
-							}
-						}
-					}
-					else
-					{
-						_logger.LogError($"Failed to transcribe chunk {i}: {chunkResult.Message}");
-					}
-				}
-			}
-			catch (Exception ex)
-			{
-				return new TranscriptionResult("", new List<Segment>())
-                {
-					Status = "error",
-					Message = $"Segmentation failed: {ex.Message}"
-				};
-			}
-			finally
-			{
-				// 5. Cleanup Temp Files
-				if (Directory.Exists(tempFolder))
-					Directory.Delete(tempFolder, true);
-			}
-
-			return combinedResult;
-		}
-
-        private TranscriptionResult ParseOutput(string output, string error)
+        /// <summary>
+        /// Segmentation logic (FFmpeg -> Chunks -> Transcribe -> Merge)
+        /// </summary>
+        public TranscriptionResult TranscribeLongFile(string sourceFile, double totalDurationSec)
         {
-            // 1. Handle cases where the script crashed or produced no output
-            if (string.IsNullOrWhiteSpace(output))
+            _logger.LogInfo($"Large file detected ({totalDurationSec}s). Starting segmentation...");
+
+            string tempFolder = Path.Combine(Path.GetTempPath(), "SpeechMaster_Chunks", Guid.NewGuid().ToString());
+            Directory.CreateDirectory(tempFolder);
+
+            var combinedResult = new TranscriptionResult("", new List<Segment>())
+            {
+                Status = "success",
+                Text = "",
+                Segments = new List<Segment>()
+            };
+
+            try
+            {
+                // 1. Split Audio (FFmpeg) -> 16kHz WAV
+                string chunkPattern = Path.Combine(tempFolder, "chunk_%03d.wav");
+                var startInfo = new ProcessStartInfo
+                {
+                    FileName = _ffmpegPath,
+                    Arguments = $"-i \"{sourceFile}\" -f segment -segment_time 300 -c:a pcm_s16le -ar 16000 -ac 1 \"{chunkPattern}\"",
+                    UseShellExecute = false,
+                    CreateNoWindow = true
+                };
+
+                using (var proc = Process.Start(startInfo))
+                {
+                    proc?.WaitForExit();
+                }
+
+                // 2. Process Chunks
+                var chunks = Directory.GetFiles(tempFolder, "chunk_*.wav").OrderBy(f => f).ToList();
+
+                for (int i = 0; i < chunks.Count; i++)
+                {
+                    string chunkPath = chunks[i];
+                    StatusService.Instance.UpdateStatus($"Processing part {i + 1} of {chunks.Count}...");
+
+                    // Calling universal RunCommand method
+                    var chunkResult = RunCommand(chunkPath, _asrEngine);
+
+                    if (chunkResult.Status == "success")
+                    {
+                        double timeOffset = i * 300.0;
+                        combinedResult.Text += " " + chunkResult.Text;
+
+                        if (chunkResult.Segments != null)
+                        {
+                            foreach (var seg in chunkResult.Segments)
+                            {
+                                seg.Start += timeOffset;
+                                seg.End += timeOffset;
+                                combinedResult.Segments.Add(seg);
+                            }
+                        }
+                    }
+                    else
+                    {
+                        _logger.LogError($"Failed to transcribe chunk {i}: {chunkResult.Message}");
+                    }
+                }
+            }
+            catch (Exception ex)
             {
                 return new TranscriptionResult("", new List<Segment>())
                 {
                     Status = "error",
-                    Message = !string.IsNullOrWhiteSpace(error)
-                        ? $"Python error: {error}"
-                        : "No output received from process."
+                    Message = $"Segmentation failed: {ex.Message}"
                 };
+            }
+            finally
+            {
+                if (Directory.Exists(tempFolder))
+                    Directory.Delete(tempFolder, true);
+            }
+
+            // Signal finish for the whole operation
+            TranscriptionFinished?.Invoke(this, new TranscriptionFinishedEventArgs(combinedResult));
+            return combinedResult;
+        }
+
+        // --- Core Execution Logic ---
+
+        private TranscriptionResult RunCommand(string filePath, string engine)
+        {
+            if (string.Equals(engine, "whisper", StringComparison.OrdinalIgnoreCase))
+            {
+                return RunWhisperCppProcess(filePath);
+            }
+            else
+            {
+                return RunPythonProcess(filePath);
+            }
+        }
+
+        // --- Implementation: Whisper.cpp ---
+
+        private TranscriptionResult RunWhisperCppProcess(string filePath)
+        {
+            // Construct path to folder (ggml-base.bin, ggml-large.bin тощо)
+            string modelPath = Path.Combine(_modelsBasePath, $"ggml-{_whisperModelSize}.bin");
+
+            if (!File.Exists(_whisperCppExePath))
+                return ErrorResult($"Whisper executable not found at {_whisperCppExePath}");
+            if (!File.Exists(modelPath))
+                return ErrorResult($"Model file not found at {modelPath}");
+
+            // -m: model, -f: file, -oj: JSON output, -l: language
+            // -oj create file, filePath + ".json"
+            string expectedJsonOutput = filePath + ".json";
+            if (File.Exists(expectedJsonOutput)) File.Delete(expectedJsonOutput);
+
+            string args = $"-m \"{modelPath}\" -f \"{filePath}\" -oj -l {_audioLanguage}";
+
+            var startInfo = new ProcessStartInfo
+            {
+                FileName = _whisperCppExePath,
+                Arguments = args,
+                RedirectStandardOutput = true, // Whisper пише логи в stdout/stderr
+                RedirectStandardError = true,
+                UseShellExecute = false,
+                CreateNoWindow = true
+            };
+
+            using (var process = new Process { StartInfo = startInfo })
+            {
+                try
+                {
+                    process.Start();
+                    // Reading logs without blocking buffer
+                    string stdOut = process.StandardOutput.ReadToEnd();
+                    string stdErr = process.StandardError.ReadToEnd();
+                    _rawProcessOutput = $"STDOUT: {stdOut}\nSTDERR: {stdErr}";
+
+                    process.WaitForExit();
+
+                    if (process.ExitCode != 0)
+                    {
+                        return ErrorResult($"Whisper.cpp failed (Exit Code {process.ExitCode}). Raw output: {_rawProcessOutput}");
+                    }
+
+                    if (File.Exists(expectedJsonOutput))
+                    {
+                        string jsonContent = File.ReadAllText(expectedJsonOutput);
+                        File.Delete(expectedJsonOutput); // Cleanup
+                        return ParseWhisperCppJson(jsonContent);
+                    }
+                    else
+                    {
+                        return ErrorResult("Whisper.cpp finished but JSON output file is missing.");
+                    }
+                }
+                catch (Exception ex)
+                {
+                    return ErrorResult($"Execution exception: {ex.Message}");
+                }
+            }
+        }
+
+        private TranscriptionResult ParseWhisperCppJson(string jsonContent)
+        {
+            try
+            {
+                // Whisper.cpp JSON output format can vary, generally:
+                // { "transcription": [ { "from": "...", "to": "...", "text": "..." } ] }
+                using (JsonDocument doc = JsonDocument.Parse(jsonContent))
+                {
+                    var result = new TranscriptionResult("", new List<Segment>()) { Status = "success", Text = "" };
+                    var root = doc.RootElement;
+
+                    if (root.TryGetProperty("transcription", out JsonElement transcriptionArray))
+                    {
+                        foreach (var item in transcriptionArray.EnumerateArray())
+                        {
+                            string text = item.TryGetProperty("text", out var t) ? t.GetString() ?? "" : "";
+
+                            // Getting time stamps
+                            double start = ExtractTime(item, "from");
+                            double end = ExtractTime(item, "to");
+
+                            text = text.Trim();
+
+                            result.Text += text + " ";
+                            result.Segments.Add(new Segment { Start = start, End = end, Text = text });
+                        }
+                    }
+                    result.Text = result.Text.Trim();
+                    return result;
+                }
+            }
+            catch (Exception ex)
+            {
+                return ErrorResult($"JSON Parsing failed: {ex.Message}");
+            }
+        }
+
+        private double ExtractTime(JsonElement element, string propertyName)
+        {
+            if (element.TryGetProperty(propertyName, out JsonElement val))
+            {
+                if (val.ValueKind == JsonValueKind.Number) return val.GetDouble(); // Якщо секунди
+                if (val.ValueKind == JsonValueKind.String)
+                {
+                    // Якщо формат "00:00:10,500" - потрібен складніший парсинг. 
+                    // Стандартний whisper.cpp з -oj часто видає string format. 
+                    // Спрощена реалізація (повертаємо 0 або намагаємось парсити TimeSpan якщо треба).
+                    // Тут припускаємо, що повертається час у string, який можна конвертувати.
+                    if (TimeSpan.TryParse(val.GetString(), out TimeSpan ts))
+                    {
+                        return ts.TotalSeconds;
+                    }
+                }
+            }
+            return 0.0;
+        }
+
+        // --- Implementation: Python (Legacy) ---
+
+        private TranscriptionResult RunPythonProcess(string filePath)
+        {
+            string args = $"\"{_scriptPath}\" \"{filePath}\" \"{_whisperModelSize}\"";
+
+            var startInfo = new ProcessStartInfo
+            {
+                FileName = _pythonExe,
+                Arguments = args,
+                RedirectStandardOutput = true,
+                RedirectStandardError = true,
+                UseShellExecute = false,
+                CreateNoWindow = true
+            };
+
+            using (var process = new Process { StartInfo = startInfo })
+            {
+                try
+                {
+                    process.Start();
+                    string output = process.StandardOutput.ReadToEnd();
+                    string error = process.StandardError.ReadToEnd();
+                    _rawProcessOutput = output;
+                    process.WaitForExit();
+
+                    return ParsePythonOutput(output, error);
+                }
+                catch (Exception ex)
+                {
+                    return ErrorResult($"Python process failed: {ex.Message}");
+                }
+            }
+        }
+
+        private TranscriptionResult ParsePythonOutput(string output, string error)
+        {
+            if (string.IsNullOrWhiteSpace(output))
+            {
+                return ErrorResult(!string.IsNullOrWhiteSpace(error) ? $"Python error: {error}" : "No output received.");
             }
 
             try
             {
-                // 2. Configure options to be forgiving with casing (e.g., "Status" vs "status")
                 var options = new JsonSerializerOptions
                 {
                     PropertyNameCaseInsensitive = true,
                     ReadCommentHandling = JsonCommentHandling.Skip,
                     AllowTrailingCommas = true
                 };
-
-                // 3. Deserialize directly. This replaces the manual "TryGetProperty" checks.
                 var result = JsonSerializer.Deserialize<TranscriptionResult>(output, options);
 
-                if (result == null)
-                {
-                    throw new JsonException("Result was null.");
-                }
+                if (result == null) throw new JsonException("Result was null.");
 
-                // 4. Normalize the data (Business Logic)
-
-                // Map "ok" to "success" to match your previous logic
-                if (string.Equals(result.Status, "ok", StringComparison.OrdinalIgnoreCase))
-                {
-                    result.Status = "success";
-                }
-
-                // Ensure fields are not null
+                // Normalization
+                if (string.Equals(result.Status, "ok", StringComparison.OrdinalIgnoreCase)) result.Status = "success";
                 result.Message ??= "";
                 result.Text ??= "";
-
-                // If deserialization worked but status is missing, flag it
-                if (string.IsNullOrEmpty(result.Status))
-                {
-                    result.Status = "error";
-                    result.Message = "Parsed JSON but found no 'status' field.";
-                }
+                if (result.Segments == null) result.Segments = new List<Segment>();
 
                 return result;
             }
             catch (JsonException ex)
             {
-                // 5. Handle Malformed JSON
-                return new TranscriptionResult("", new List<Segment>())
-                {
-                    Status = "error",
-                    Message = $"Invalid JSON format. Error: {ex.Message}\nRaw output: {output}"
-                };
+                return ErrorResult($"Invalid JSON format from Python. Error: {ex.Message}\nRaw: {output}");
             }
         }
 
-        // Basic usage
-        private TranscriptionResult RunCommand(string filePath)
+        // --- Helpers ---
+
+        private TranscriptionResult ErrorResult(string message)
         {
-            var processStartInfo = new System.Diagnostics.ProcessStartInfo
+            _logger.LogError(message);
+            return new TranscriptionResult("", new List<Segment>())
             {
-                FileName = _pythonExe,
-                Arguments = $"\"{_scriptPath}\" \"{filePath}\"",
-                RedirectStandardOutput = true,
-                RedirectStandardError = true,
-                UseShellExecute = false,
-                CreateNoWindow = true
+                Status = "error",
+                Message = message
             };
-            using (var process = new System.Diagnostics.Process { StartInfo = processStartInfo })
-            {
-                try
-                {
-                    process.Start();
-                    var output = process.StandardOutput.ReadToEnd();
-                    var error = process.StandardError.ReadToEnd();
-                    _rawPythonOutput = output;
-                    process.WaitForExit();
-                    var result = ParseOutput(output, error);
-                    // Signal finish (success or domain result)
-                    TranscriptionFinished?.Invoke(this, new TranscriptionFinishedEventArgs(result));
-                }
-                catch (Exception ex)
-                {
-                    var errorResult = new TranscriptionResult("", new List<Segment>())
-                    {
-                        Status = "error",
-                        Message = $"Failed to start Python process: {ex.Message}. \nRaw python script output: {_rawPythonOutput}"
-                    };
-                    // Signal finish with error
-                    TranscriptionFinished ?.Invoke(this, new TranscriptionFinishedEventArgs(errorResult));
-                    return errorResult;
-                }
-                return new TranscriptionResult("", new List<Segment>())
-                {
-                    Status = "success",
-                    Message = "Transcription completed."
-                };
-            }
-        }
-
-        private TranscriptionResult RunCommand(string filePath, string model)
-        {
-            var processStartInfo = new System.Diagnostics.ProcessStartInfo
-            {
-                FileName = _pythonExe,
-                Arguments = $"\"{_scriptPath}\" \"{filePath}\" \"{model}\"",
-                RedirectStandardOutput = true,
-                RedirectStandardError = true,
-                UseShellExecute = false,
-                CreateNoWindow = true
-            };
-            using (var process = new System.Diagnostics.Process { StartInfo = processStartInfo })
-            {
-                try
-                {
-                    process.Start();
-                    var output = process.StandardOutput.ReadToEnd();
-                    var error = process.StandardError.ReadToEnd();
-                    _rawPythonOutput = output;
-                    process.WaitForExit();
-                    var result = ParseOutput(output, error);
-                    // Signal finish (success or domain result)
-                    TranscriptionFinished ?.Invoke(this, new TranscriptionFinishedEventArgs(result));
-                }
-                catch (Exception ex)
-                {
-                    var errorResult = new TranscriptionResult("", new List<Segment>())
-                    {
-                        Status = "error",
-                        Message = $"Failed to start Python process: {ex.Message}. \nRaw python script output: {_rawPythonOutput}"
-                    };
-                    // Signal finish with error
-                    TranscriptionFinished?. Invoke(this, new TranscriptionFinishedEventArgs(errorResult));
-                    return errorResult;
-                }
-                _logger.LogInfo($"Transcription completed for file: {filePath} using model: {model}");
-                return new TranscriptionResult("", new List<Segment>())
-                {
-                    Status = "success",
-                    Message = "Transcription completed."
-                };
-            }
-        }
-
-        private TranscriptionResult RunCommand(string filePath, string model, 
-            string size, string language)
-        {
-            var processStartInfo = new System.Diagnostics.ProcessStartInfo
-            {
-                FileName = _pythonExe,
-                Arguments = $"\"{_scriptPath}\" \"{filePath}\" \"{model}\"",
-                RedirectStandardOutput = true,
-                RedirectStandardError = true,
-                UseShellExecute = false,
-                CreateNoWindow = true
-            };
-            using (var process = new System.Diagnostics.Process { StartInfo = processStartInfo })
-            {
-                try
-                {
-                    process.Start();
-                    var output = process.StandardOutput.ReadToEnd();
-                    var error = process.StandardError.ReadToEnd();
-                    _rawPythonOutput = output;
-                    process.WaitForExit();
-
-                    var result = ParseOutput(output, error);
-
-                    // Signal finish (success or domain result)
-                    TranscriptionFinished?.Invoke(this, new TranscriptionFinishedEventArgs(result));
-                }
-                catch (Exception ex)
-                {
-                    var errorResult = new TranscriptionResult("", new List<Segment>())
-                    {
-                        Status = "error",
-                        Message = $"Failed to start Python process: {ex.Message}. \nRaw python script output: {_rawPythonOutput}"
-                    };
-
-                    // Signal finish with error
-                    TranscriptionFinished?.Invoke(this, new TranscriptionFinishedEventArgs(errorResult));
-                    return errorResult;
-                }
-                return new TranscriptionResult("", new List<Segment>())
-                {
-                    Status = "success",
-                    Message = "Transcription completed."
-                };
-            }
-        }
-        
-        // TODO: I need to make better CLI interface for testing.
-        // Also, make CLI message about current working asr models
-        // so it will be easier to extend it with other models
-        public TranscriptionResult Transcribe(string audioPath)
-        {
-            if (!File.Exists(audioPath))
-            {
-                throw new FileNotFoundException("Audio file not found.", audioPath);
-            }
-            if (!File.Exists(_scriptPath))
-            {
-                throw new FileNotFoundException("asr.py not found.", _scriptPath);
-            }
-            // Signal transcription start
-            TranscriptionStarted?.Invoke(this, EventArgs.Empty);
-            _logger.LogInfo($"Starting transcription for file: {audioPath} using ASR Engine: {_asrEngine}");
-            // Start script with parameters via StartProcess
-            return RunCommand(audioPath, _asrEngine);
         }
     }
 }

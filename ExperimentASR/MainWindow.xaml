@@ -9,7 +9,7 @@
         mc:Ignorable="d"
         ui:WindowHelper.UseModernWindowStyle="True"
         TextOptions.TextFormattingMode="Display" 
-        Title="Transcription" Height="720" Width="1280" Loaded="Window_Loaded" Closing="Window_Closing" ResizeMode="NoResize">
+        Title="Transcription" Height="720" Width="1280" Loaded="Window_Loaded" Closing="Window_Closing">
 	<Window.Resources>
 		<SolidColorBrush x:Key="AccentBrush" Color="#0057B7"/>
 		<SolidColorBrush x:Key="AccentLightBrush" Color="#FFD700"/>
@@ -86,96 +86,95 @@
 			</MenuItem>
 		</Menu>
 
-		<Grid Margin="10">
-			<Grid.ColumnDefinitions>
-				<ColumnDefinition Width="300"/>
-				<ColumnDefinition Width="*"/>
-				<ColumnDefinition Width="280"/>
-			</Grid.ColumnDefinitions>
+        <Grid Margin="10">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="350"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
 
-			<Border Grid.Column="0" BorderBrush="Gray" BorderThickness="1"
-            CornerRadius="8" Padding="16" Margin="0,0,625,0" Grid.ColumnSpan="2">
+            <Border Grid.Column="0" 
+            BorderBrush="Gray" 
+            BorderThickness="1"
+            CornerRadius="8" 
+            Padding="16" 
+            Margin="0,0,10,0">
 
-				<StackPanel x:Name="panelTranscriptOptions" VerticalAlignment="Center" Height="536">
-
-					<Button x:Name="btnStartTranscribe" Height="120" Width="120" Margin="0,10,0,0"
+                <StackPanel x:Name="panelTranscriptOptions" VerticalAlignment="Center">
+                    <Button x:Name="btnStartTranscribe" Height="120" Width="120" Margin="0,10,0,0"
                     Style="{StaticResource RoundButtonStyle}"
                     Background="{StaticResource AccentBrush}"
                     Foreground="White" FontSize="48" FontWeight="Bold"
                     Content="▶" 
                     Click="BtnStartTranscribe_Click"/>
 
-					<TextBlock x:Name="blockStartTranscription" Text="Start transcription" 
+                    <TextBlock x:Name="blockStartTranscription" Text="Start transcription" 
                        HorizontalAlignment="Center" FontSize="16" Margin="0,10,0,10" FontWeight="Bold"/>
 
-					<TextBlock x:Name="blockImportLocalFile" 
+                    <TextBlock x:Name="blockImportLocalFile" 
                        Margin="0,10,0,5" Text="Import local file"/>
 
-					<Grid>
-						<Grid.ColumnDefinitions>
-							<ColumnDefinition Width="*"/>
-							<ColumnDefinition Width="Auto"/>
-						</Grid.ColumnDefinitions>
-						<TextBox x:Name="txtAudioFilePath" IsReadOnly="True" VerticalContentAlignment="Center"/>
-						<Button x:Name="btnFileSelect" Grid.Column="1" Content="📁" Width="40" Margin="5,0,0,0" Click="BtnSelectFile_Click"/>
-					</Grid>
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBox x:Name="txtAudioFilePath" IsReadOnly="True" VerticalContentAlignment="Center"/>
+                        <Button x:Name="btnFileSelect" Grid.Column="1" Content="📁" Width="40" Margin="5,0,0,0" Click="BtnSelectFile_Click"/>
+                    </Grid>
 
-					<StackPanel VerticalAlignment="Stretch">
-						<StackPanel Orientation="Horizontal" Margin="0,10,0,0"/>
-					</StackPanel>
-					<Separator Height="20"/>
+                    <Separator Height="20"/>
 
-					<Grid Margin="10">
-						<Grid.RowDefinitions>
-							<RowDefinition Height="Auto"/>
-							<RowDefinition Height="*"/>
-						</Grid.RowDefinitions>
+                    <Grid Margin="0,10,0,0">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="*"/>
+                        </Grid.RowDefinitions>
 
-						<StackPanel Orientation="Horizontal" Margin="0,0,0,10"/>
+                        <TextBlock x:Name="blockQueue" Text="Transcription Queue" Margin="0,0,0,10" Grid.Row="0" FontSize="16"/>
 
-						<TextBlock x:Name="blockQueue" Text="Transcription Queue" Margin="0,0,0,10" Grid.Row="0" FontSize="16"/>
-						<DataGrid x:Name="QueueGrid" Grid.Row="1" AutoGenerateColumns="False" 
-							IsReadOnly="True" Margin="-10,0,10,0" 
-							ToolTip="Displays current audio files queued for transcription">
-							<DataGrid.Columns>
-								<DataGridTextColumn Header="File Name" Binding="{Binding FileName}" Width="100"/>
-								<DataGridTextColumn Header="Status" Binding="{Binding Status}" Width="100"/>
-							</DataGrid.Columns>
-						</DataGrid>
-					</Grid>
+                        <DataGrid x:Name="QueueGrid" Grid.Row="1" AutoGenerateColumns="False" 
+                          IsReadOnly="True" Height="200"
+                          ToolTip="Displays current audio files queued for transcription">
+                            <DataGrid.Columns>
+                                <DataGridTextColumn Header="File Name" Binding="{Binding FileName}" Width="*"/>
+                                <DataGridTextColumn Header="Status" Binding="{Binding Status}" Width="80"/>
+                            </DataGrid.Columns>
+                        </DataGrid>
+                    </Grid>
+                </StackPanel>
+            </Border>
 
-					<StackPanel VerticalAlignment="Stretch">
-						<StackPanel Orientation="Horizontal" Margin="0,10,0,0"/>
-					</StackPanel>
-				</StackPanel>
-			</Border>
+            <Border x:Name="borderTranscriptOutput" 
+            Grid.Column="1" 
+            BorderBrush="Gray" 
+            BorderThickness="1"
+            CornerRadius="8" 
+            Padding="20" 
+            Margin="0">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
 
-			<Border x:Name="borderTranscriptOutput" Grid.Column="1" BorderBrush="Gray" BorderThickness="1"
-            CornerRadius="8" Padding="20" Margin="60,0,0,0" Grid.ColumnSpan="2">
-				<Grid>
-					<Grid.RowDefinitions>
-						<RowDefinition Height="*"/>
-						<RowDefinition Height="Auto"/>
-					</Grid.RowDefinitions>
-
-					<ScrollViewer VerticalScrollBarVisibility="Auto">
-						<TextBox x:Name="boxTranscriptOutput" 
+                    <ScrollViewer VerticalScrollBarVisibility="Auto" Grid.Row="0">
+                        <TextBox x:Name="boxTranscriptOutput" 
                          TextWrapping="Wrap" AcceptsReturn="True"
                          FontSize="18" 
                          Background="Transparent"
                          BorderThickness="0" IsReadOnly="True"
-                         Text="Transcript result will appear here..." Height="500" Width="813" />
-					</ScrollViewer>
+                         Text="Transcript result will appear here..." 
+                         HorizontalAlignment="Stretch" VerticalAlignment="Stretch"/>
+                    </ScrollViewer>
 
-					<StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,10,0,0">
-						<Button x:Name="btnCopy" Content="Copy" Margin="0,0,5,0" 
-							Click="BtnCopyText_Click" ToolTip="Copies transcription to your text buffer"/>
-						<Button x:Name="btnSaveTxt" Content="Save TXT" Margin="0,0,5,0" 
-						Click="BtnSaveTxt_Click" ToolTip="Opens file dialog to save transcript locally"/>
-					</StackPanel>
-				</Grid>
-			</Border>
-
-		</Grid>
-	</DockPanel>
+                    <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,10,0,0">
+                        <Button x:Name="btnCopy" Content="Copy" Margin="0,0,5,0" 
+                        Click="BtnCopyText_Click" ToolTip="Copies transcription to your text buffer"/>
+                        <Button x:Name="btnSaveTxt" Content="Save TXT" Margin="0,0,5,0" 
+                        Click="BtnSaveTxt_Click" ToolTip="Opens file dialog to save transcript locally"/>
+                    </StackPanel>
+                </Grid>
+            </Border>
+        </Grid>
+    </DockPanel>
 </Window>

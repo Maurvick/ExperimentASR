@@ -106,7 +106,11 @@ namespace SpeechMaster.Services
         {
             try
             {
-                if (!File.Exists(_settingsFilePath)) return;
+                if (!File.Exists(_settingsFilePath))
+                {
+                    _logger.LogInfo("Settings file not found. Using default settings.");
+                    File.Create(_settingsFilePath).Dispose();
+                }    
 
                 var json = File.ReadAllText(_settingsFilePath);
                 var persisted = JsonSerializer.Deserialize<PersistedSettings>(json);

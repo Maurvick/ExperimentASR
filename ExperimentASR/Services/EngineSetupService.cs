@@ -27,16 +27,19 @@ namespace SpeechMaster.Services
 
 		public bool IsEngineInstalled()
 		{
-			string dllPath = Path.Combine(_baseDir, "whisper.dll");
+			string dllPath = Path.Combine(_baseDir, "Tools", "whisper.dll");
 			string modelPath = Path.Combine(_baseDir, "Models", DefaultModelName);
 			return File.Exists(dllPath) && File.Exists(modelPath);
 		}
 
 		public async Task EnsureEngineExistsAsync()
 		{
-			string dllPath = Path.Combine(_baseDir, "whisper.dll");
+            string engineFolder = Path.Combine(_baseDir, "Tools");
+            string dllPath = Path.Combine(_baseDir, "Tools", "whisper.dll");
 
-			if (File.Exists(dllPath))
+            if (!Directory.Exists(engineFolder)) Directory.CreateDirectory(engineFolder);
+
+            if (File.Exists(dllPath))
 			{
 				StatusService.Instance.UpdateStatus("Engine integrity check: OK");
 				return;
