@@ -1,4 +1,4 @@
-﻿using SpeechMaster.Models.Transcription; // Переконайтеся, що тут є класи TranscriptionResult та Segment
+﻿using SpeechMaster.Models.Transcription; 
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -60,7 +60,6 @@ namespace SpeechMaster.Services
             // Для прикладу запускаємо пряму транскрипцію для коротких файлів або логіку сплітінгу.
             // Тут залишаємо прямий виклик для спрощення, або вашу логіку перевірки тривалості.
 
-            // Приклад виклику:
             return RunCommand(audioPath, _asrEngine);
         }
 

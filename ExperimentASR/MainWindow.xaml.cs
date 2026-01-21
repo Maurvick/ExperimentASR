@@ -149,7 +149,7 @@ namespace SpeechMaster
                 else
                 {
                     // If Transcriber sets Message on failure, show it; otherwise show fallback
-                    var msg = currentJob.Status ?? "Під час розпізнавання сталася помилка.";
+                    var msg = currentJob.Status ?? "An error occurred during transcription process.";
                     MessageBox.Show(msg, "Error", MessageBoxButton.OK, MessageBoxImage.Warning);
                     boxTranscriptOutput.Text = msg;
                 }
@@ -157,7 +157,7 @@ namespace SpeechMaster
             catch (FileNotFoundException fnfEx)
             {
                 // e.g. audio file not found
-                var msg = $"Файл не знайдено: {fnfEx.Message}";
+                var msg = $"File not found: {fnfEx.Message}";
                 MessageBox.Show(msg, "File not found", MessageBoxButton.OK, MessageBoxImage.Error);
                 boxTranscriptOutput.Text = msg;
             }
@@ -171,7 +171,7 @@ namespace SpeechMaster
             catch (Exception ex)
             {
                 // Generic fallback
-                var msg = $"Помилка під час розпізнавання: {ex.Message}";
+                var msg = $"An error occurred: {ex.Message}";
                 MessageBox.Show(msg, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                 boxTranscriptOutput.Text = msg;
             }

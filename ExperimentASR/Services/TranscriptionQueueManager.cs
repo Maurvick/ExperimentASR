@@ -54,7 +54,7 @@ namespace SpeechMaster.Services
 
                     currentJob.Status = "Processing...";
 
-                    var result = await Task.Run(() => SimulateTranscribe(currentJob.FilePath));
+                    var result = await Task.Run(() => StartTranscription(currentJob.FilePath));
 
                     // 2. CHECK AGAIN AFTER JOB FINISHES (to avoid updating UI if canceled)
                     if (_cts.Token.IsCancellationRequested)
@@ -84,7 +84,7 @@ namespace SpeechMaster.Services
             _cts?.Cancel(); // Signal the stop
         }
 
-        private async Task<TranscriptionResult> SimulateTranscribe(string path)
+        private async Task<TranscriptionResult> StartTranscription(string path)
         {
             return await Task.Run(() => _transcribeSerivce.Transcribe(path));
         }
