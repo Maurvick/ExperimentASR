@@ -23,19 +23,27 @@ namespace SpeechMaster.Services
 		{
 			_baseDir = AppDomain.CurrentDomain.BaseDirectory;
 			_httpClient = new HttpClient();
+			// User-Agent обов'язковий для GitHub API
 			_httpClient.DefaultRequestHeaders.Add("User-Agent", "SpeechMaster-App");
 
+			// Шлях: .../Tools/whisper/
 			_toolsDir = Path.Combine(_baseDir, "Tools", "whisper");
-
 			_whisperExePath = Path.Combine(_toolsDir, "whisper-cli.exe");
 		}
 
+		/// <summary>
+		/// Перевіряє, чи існують файли рушія та моделі.
+		/// </summary>
 		public bool IsEngineInstalled()
 		{
 			string modelPath = Path.Combine(_baseDir, "Models", DefaultModelName);
+			// Перевіряємо наявність exe та моделі
 			return File.Exists(_whisperExePath) && File.Exists(modelPath);
 		}
 
+		/// <summary>
+		/// Повертає шлях до папки з інструментами (для відкриття в Explorer тощо).
+		/// </summary>
 		public string GetWhisperFolderPath()
 		{
 			return _toolsDir;
@@ -45,10 +53,16 @@ namespace SpeechMaster.Services
 		{
 			if (!Directory.Exists(_toolsDir)) Directory.CreateDirectory(_toolsDir);
 
+			// Перевіряємо наявність .exe.
 			if (File.Exists(_whisperExePath))
 			{
-				StatusService.Instance.UpdateStatus("Engine integrity check: OK");
-				return;
+				// Швидка перевірка: чи є поруч хоча б якісь .dll? 
+				var dllFiles = Directory.GetFiles(_toolsDir, "*.dll");
+				if (dllFiles.Length > 0)
+				{
+					StatusService.Instance.UpdateStatus("Engine integrity check: OK");
+					return;
+				}
 			}
 
 			string zipPath = Path.Combine(_baseDir, "engine_temp.zip");
@@ -61,14 +75,15 @@ namespace SpeechMaster.Services
 				string downloadUrl = await GetLatestDownloadUrlAsync();
 
 				StatusService.Instance.SetProgress(25);
-				StatusService.Instance.UpdateStatus("Downloading latest Whisper Engine...");
+				StatusService.Instance.UpdateStatus("Downloading Whisper Engine...");
 
 				await DownloadFileAsync(downloadUrl, zipPath);
 
 				StatusService.Instance.SetProgress(50);
-				StatusService.Instance.UpdateStatus("Extracting whisper-cli.exe...");
+				StatusService.Instance.UpdateStatus("Extracting engine files...");
 
-				ExtractFileFromZip(zipPath, "whisper-cli.exe", _whisperExePath);
+				// Розпаковуємо все (exe + dll)
+				ExtractAllFilesFromZip(zipPath, _toolsDir);
 
 				StatusService.Instance.SetProgress(75);
 				StatusService.Instance.UpdateStatus("Engine installed successfully.");
@@ -85,6 +100,58 @@ namespace SpeechMaster.Services
 			}
 		}
 
+		public async Task EnsureModelExistsAsync(string modelName = DefaultModelName)
+		{
+			string modelFolder = Path.Combine(_baseDir, "Models");
+			string modelPath = Path.Combine(modelFolder, modelName);
+
+			if (!Directory.Exists(modelFolder)) Directory.CreateDirectory(modelFolder);
+
+			if (File.Exists(modelPath))
+			{
+				StatusService.Instance.UpdateStatus("Model check: OK");
+				return;
+			}
+
+			StatusService.Instance.UpdateStatus($"Downloading Model: {modelName}...");
+			try
+			{
+				await DownloadFileAsync($"{ModelBaseUrl}{modelName}", modelPath);
+				StatusService.Instance.UpdateStatus($"Model {modelName} ready.");
+			}
+			catch (Exception ex)
+			{
+				if (File.Exists(modelPath)) File.Delete(modelPath);
+				throw;
+			}
+		}
+
+		// --- Private Helpers ---
+
+		private void ExtractAllFilesFromZip(string zipPath, string targetDirectory)
+		{
+			using (ZipArchive archive = ZipFile.OpenRead(zipPath))
+			{
+				foreach (var entry in archive.Entries)
+				{
+					if (string.IsNullOrEmpty(entry.Name)) continue;
+
+					// Розпаковуємо exe та dll, ігноруючи структуру папок
+					if (entry.FullName.EndsWith(".exe", StringComparison.OrdinalIgnoreCase) ||
+						entry.FullName.EndsWith(".dll", StringComparison.OrdinalIgnoreCase))
+					{
+						string destinationPath = Path.Combine(targetDirectory, entry.Name);
+						entry.ExtractToFile(destinationPath, overwrite: true);
+					}
+				}
+			}
+
+			if (!File.Exists(Path.Combine(targetDirectory, "whisper-cli.exe")))
+			{
+				throw new FileNotFoundException("Critical file 'whisper-cli.exe' was not found in the downloaded archive.");
+			}
+		}
+
 		private async Task<string> GetLatestDownloadUrlAsync()
 		{
 			try
@@ -97,9 +164,8 @@ namespace SpeechMaster.Services
 						foreach (JsonElement asset in assets.EnumerateArray())
 						{
 							string name = asset.GetProperty("name").GetString() ?? "";
-							
 							if (name.Contains("bin-x64", StringComparison.OrdinalIgnoreCase) &&
-								name.Contains(".zip", StringComparison.OrdinalIgnoreCase))
+								name.EndsWith(".zip", StringComparison.OrdinalIgnoreCase))
 							{
 								return asset.GetProperty("browser_download_url").GetString();
 							}
@@ -110,7 +176,7 @@ namespace SpeechMaster.Services
 			}
 			catch (Exception ex)
 			{
-				throw new Exception($"Failed to connect to GitHub API: {ex.Message}");
+				throw new Exception($"GitHub API Error: {ex.Message}");
 			}
 		}
 
@@ -133,49 +199,13 @@ namespace SpeechMaster.Services
 					{
 						await fileStream.WriteAsync(buffer, 0, bytesRead);
 						totalRead += bytesRead;
-						// Update progress here
+						if (totalBytes != -1 && totalRead % (1024 * 100) == 0)
+						{
+							double progress = Math.Round((double)totalRead / totalBytes * 100, 0);
+							StatusService.Instance.SetProgress(progress);
+						}
 					}
 				}
-			}
-		}
-
-		private void ExtractFileFromZip(string zipPath, string targetFileName, string destinationPath)
-		{
-			using (ZipArchive archive = ZipFile.OpenRead(zipPath))
-			{
-				var entry = archive.Entries.FirstOrDefault(e =>
-					e.FullName.EndsWith(targetFileName, StringComparison.OrdinalIgnoreCase));
-
-				if (entry != null)
-				{
-					entry.ExtractToFile(destinationPath, overwrite: true);
-				}
-				else
-				{
-					// Find main.exe if whisper-cli.exe is not found
-					var structure = string.Join("\n", archive.Entries.Select(e => e.FullName));
-					throw new FileNotFoundException($"Could not find '{targetFileName}' in zip.\nContents:\n{structure}");
-				}
-			}
-		}
-
-		public async Task EnsureModelExistsAsync(string modelName = DefaultModelName)
-		{
-			string modelFolder = Path.Combine(_baseDir, "Models");
-			string modelPath = Path.Combine(modelFolder, modelName);
-			if (!Directory.Exists(modelFolder)) Directory.CreateDirectory(modelFolder);
-			if (File.Exists(modelPath)) { StatusService.Instance.UpdateStatus("Model check: OK"); return; }
-
-			StatusService.Instance.UpdateStatus($"Downloading Model: {modelName}...");
-			try
-			{
-				await DownloadFileAsync($"{ModelBaseUrl}{modelName}", modelPath);
-				StatusService.Instance.UpdateStatus($"Model {modelName} ready.");
-			}
-			catch (Exception ex)
-			{
-				if (File.Exists(modelPath)) File.Delete(modelPath);
-				throw;
 			}
 		}
 	}

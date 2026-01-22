@@ -46,7 +46,7 @@
 					</StackPanel>
 
 					<StackPanel Grid.Column="2" Orientation="Horizontal" HorizontalAlignment="Right">
-						<TextBlock x:Name="textAsrLocation" Text="ASR path" VerticalAlignment="Center" Visibility="Hidden"/>
+						
 
 						<Border Width="1" Background="#FFCCCCCC" Margin="10,2"/>
 
@@ -56,12 +56,8 @@
 
 						<TextBlock x:Name="txtFFMPEGPath" Text="FFMPEG" VerticalAlignment="Center"/>
 
-						<Border Width="1" Background="#FFCCCCCC" Margin="10,2"/>
 
-						<TextBlock x:Name="txtPythonExecutable" Text="PythonExecutable" VerticalAlignment="Center"/>
 
-						<Border Width="1" Background="#FFCCCCCC" Margin="10,2"/>
-						<TextBlock x:Name="txtSqlConnection" Text="SqlConnection" VerticalAlignment="Center"></TextBlock>
 					</StackPanel>
 				</Grid>
 			</StatusBarItem>

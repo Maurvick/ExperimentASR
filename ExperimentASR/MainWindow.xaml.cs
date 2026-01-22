@@ -47,12 +47,12 @@ namespace SpeechMaster
         {
             if (File.Exists(_transcribeSerivce.AsrEngineLocation))
             {
-                textAsrLocation.Text = "ASR Engine Location found: " + _transcribeSerivce.AsrEngineLocation;
+                // textAsrLocation.Text = "ASR Engine Location found: " + _transcribeSerivce.AsrEngineLocation;
             }
             else
             {
-                textAsrLocation.Text = "ASR Engine Location not found.";
-                textAsrLocation.Foreground = System.Windows.Media.Brushes.Red;
+                // textAsrLocation.Text = "ASR Engine Location not found.";
+                // textAsrLocation.Foreground = System.Windows.Media.Brushes.Red;
             }
             if (System.Numerics.Vector.IsHardwareAccelerated)
             {
