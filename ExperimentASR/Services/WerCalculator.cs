@@ -1,5 +1,6 @@
 ﻿namespace SpeechMaster.Services
 {
+	// FIXME: Unused class for benchmarking WER/CER calculations
 	public static class WerCalculator
 	{
 		// Modified Levenshtein for WER calculation [Graves et al., 2006, adapted]

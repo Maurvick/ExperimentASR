@@ -3,7 +3,8 @@ using System.Collections.ObjectModel;
 
 namespace SpeechMaster.Services
 {
-    public class TranscriptionQueueManager
+	// TODO: Review this class for potential improvements.
+	public class TranscriptionQueueManager
     {
         private readonly TranscribeService _transcribeSerivce;
 

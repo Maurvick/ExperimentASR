@@ -11,5 +11,8 @@ namespace SpeechMaster.Services
             TimeSpan duration = reader.TotalTime;
             return (int)duration.TotalSeconds;
         }
+
+		// FIXME: Extract audio from video files
+
 	}
 }

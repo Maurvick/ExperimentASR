@@ -3,7 +3,8 @@ using System.Diagnostics;
 
 namespace SpeechMaster.Services
 {
-    public class BenchmarkRunner
+	// FIXME: Incompleted class. Crucial for project.
+	public class BenchmarkRunner
     {
 		private readonly HistoryService _historyService;
 

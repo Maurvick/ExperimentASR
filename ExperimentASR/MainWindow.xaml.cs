@@ -29,7 +29,7 @@ namespace SpeechMaster
             // Bind the DataGrid to queue manager list
             QueueGrid.ItemsSource = _queueManager.Jobs;
 			ProcessedItems = new ObservableCollection<TranscriptionHistoryItem>();
-			HistoryGrid.ItemsSource = ProcessedItems;
+			// HistoryGrid.ItemsSource = ProcessedItems;
 		}
 
 		private void UpdateStatusText(string message)
@@ -82,13 +82,10 @@ namespace SpeechMaster
 				ProcessedDate = DateTime.Now
 			};
 
-			// Оновлюємо UI (обов'язково через Dispatcher, якщо подія з іншого потоку)
 			Dispatcher.Invoke(() =>
 			{
 				ProcessedItems.Insert(0, newItem); // Додаємо на початок списку
-
-				// Автоматично вибираємо новий елемент, щоб показати текст
-				HistoryGrid.SelectedItem = newItem;
+				// HistoryGrid.SelectedItem = newItem;
 			});
 		}
 
@@ -104,11 +101,29 @@ namespace SpeechMaster
 
 		private void HistoryGrid_SelectionChanged(object sender, SelectionChangedEventArgs e)
 		{
-			if (HistoryGrid.SelectedItem is TranscriptionHistoryItem selectedItem)
-			{
-				boxTranscriptOutput.Text = selectedItem.TranscriptText;
+			//if (HistoryGrid.SelectedItem is TranscriptionHistoryItem selectedItem)
+			//{
+			//	boxTranscriptOutput.Text = selectedItem.TranscriptText;
 
-				txtSelectedFileStats.Text = $"File: {selectedItem.FileName} | Chars: {selectedItem.TranscriptText.Length}";
+			//	txtSelectedFileStats.Text = $"File: {selectedItem.FileName} | Chars: {selectedItem.TranscriptText.Length}";
+			//}
+		}
+
+		// Change the method name to match XAML, and use SelectionChangedEventArgs
+		private void QueueGrid_SelectionChanged(object sender, SelectionChangedEventArgs e)
+		{
+			// Check if the selected item is valid and cast it to your TranscriptionJob model
+			if (QueueGrid.SelectedItem is SpeechMaster.Models.Transcription.TranscriptionJob selectedJob)
+			{
+				// If the result exists, show it. Otherwise, show the status.
+				if (!string.IsNullOrEmpty(selectedJob.Result))
+				{
+					boxTranscriptOutput.Text = selectedJob.Result;
+				}
+				else
+				{
+					boxTranscriptOutput.Text = $"Status: {selectedJob.Status ?? "Pending..."}";
+				}
 			}
 		}
 
@@ -117,7 +132,7 @@ namespace SpeechMaster
             // Marshals to UI thread and start indeterminate progress
             Dispatcher.Invoke(() =>
             {
-                progressTranscript.IsIndeterminate = true;
+				progressTranscript.IsIndeterminate = true;
                 progressTranscript.Visibility = Visibility.Visible;
                 StatusText.Text = "Transcribing...";
             });
@@ -128,14 +143,16 @@ namespace SpeechMaster
             // Marshals to UI thread and stop progress
             Dispatcher.Invoke(() =>
             {
-                progressTranscript.IsIndeterminate = false;
+                btnStartTranscribe.Content = "▶";
+				progressTranscript.IsIndeterminate = false;
                 progressTranscript.Value = 0;
                 progressTranscript.Visibility = Visibility.Visible;
                 StatusText.Text = "Ready";
             });
         }
 
-        private void BtnSelectFile_Click(object sender, RoutedEventArgs e)
+		// TODO: Support Drag and Drop of files into the window
+		private void BtnSelectFile_Click(object sender, RoutedEventArgs e)
         {
             var ofd = new OpenFileDialog();
             ofd.Filter = "Audio files|*.wav;*.mp3;*.ogg;*.flac|All files|*.*";
@@ -164,7 +181,6 @@ namespace SpeechMaster
 
         private async void BtnStartTranscribe_Click(object sender, RoutedEventArgs e)
         {
-			// TODO: I need to check if all tools are available before starting
 			var file = txtAudioFilePath.Text;
 
             if (string.IsNullOrWhiteSpace(file))
@@ -175,12 +191,16 @@ namespace SpeechMaster
 
             boxTranscriptOutput.Text = "Please wait, analizing file...";
             StatusService.Instance.UpdateStatus("Working...");
+			btnStartTranscribe.Content = "⏹";
+			blockStartTranscription.Text = "Stop Transcription";
+			btnStartTranscribe.Background = System.Windows.Media.Brushes.OrangeRed;
 
-            try
+			try
             {
                 // Initiate transcription via TranscribeService
                 await _queueManager.StartProcessing();
-                var currentJob = _queueManager.Jobs.First();
+				// FIXME: This is probably processing only the first item in the queue
+				var currentJob = _queueManager.Jobs[0];
 
                 if (currentJob == null)
                 {
@@ -192,8 +212,13 @@ namespace SpeechMaster
 
                 if (!string.IsNullOrWhiteSpace(currentJob.Result))
                 {
-                    boxTranscriptOutput.Text = currentJob.Result;
-                }
+					// TODO: It might be better to have text summarization functionality
+					// TODO: Implement key phrases extract functionality for NLP analysis
+					boxTranscriptOutput.Text = currentJob.Result;
+					btnStartTranscribe.Content = "▶";
+					blockStartTranscription.Text = "Start Transcription";
+                    btnStartTranscribe.Background = System.Windows.Media.Brushes.DarkBlue;
+				}
                 else
                 {
                     // If Transcriber sets Message on failure, show it; otherwise show fallback

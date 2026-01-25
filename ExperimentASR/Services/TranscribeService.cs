@@ -8,6 +8,9 @@ using System.Text.Json;
 
 namespace SpeechMaster.Services
 {
+	// TODO: Support SRT export, multiple ASR engines, etc
+	// TODO: Support different model sizes (base, small, medium, large)
+	// FIXME: Use TranscriptStarted and TranscriptFinished events in UI
 	public class TranscribeService
 	{
 		private readonly Logger _logger = new Logger();
@@ -17,14 +20,13 @@ namespace SpeechMaster.Services
 		private readonly string _scriptPath = "./Scripts/asr_engine.py";
 
 		// --- Whisper.cpp Configuration ---
-		// ВИПРАВЛЕНО: Використовуємо whisper-cli.exe замість deprecated main.exe
 		private readonly string _whisperCppExePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Tools", "whisper", "whisper-cli.exe");
 		private readonly string _modelsBasePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Models");
 
 		// --- Settings ---
 		private readonly string _whisperModelSize;
 		private readonly string _audioLanguage;
-		private readonly string _asrEngine; // "openai_whisper" (python) або "whisper.cpp"
+		private readonly string _asrEngine; // "openai_whisper" (python) or "whisper.cpp"
 
 		// --- Diagnostics ---
 		private string _rawProcessOutput = "";
@@ -37,8 +39,8 @@ namespace SpeechMaster.Services
 		public TranscribeService()
 		{
 			SettingsManager settings = new SettingsManager();
-			_whisperModelSize = settings.WhisperModelSize; // наприклад: "base", "small", "large"
-			_audioLanguage = settings.AudioLanguage;       // наприклад: "uk", "en", "auto"
+			_whisperModelSize = settings.WhisperModelSize; // for ex: "base", "small", "large"
+			_audioLanguage = settings.AudioLanguage;       // for ex: "uk", "en", "auto"
 			_asrEngine = settings.AsrEngine;
 		}
 
@@ -176,7 +178,7 @@ namespace SpeechMaster.Services
 			// whisper-cli.exe з прапором -oj створює файл: <filePath>.json
 			string expectedJsonOutput = filePath + ".json";
 
-			// Видаляємо старий файл результату, якщо він існує
+			// Delete existing JSON output if any
 			if (File.Exists(expectedJsonOutput)) File.Delete(expectedJsonOutput);
 
 			string args = $"-m \"{modelPath}\" -f \"{filePath}\" -oj -l {_audioLanguage}";

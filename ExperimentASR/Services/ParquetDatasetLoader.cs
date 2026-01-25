@@ -6,7 +6,8 @@ using SpeechMaster.Models;
 
 namespace SpeechMaster.Services
 {
-    public class ParquetDatasetLoader
+	// TODO: Unused. Implement or remove.
+	public class ParquetDatasetLoader
     {
         public async Task<List<DatasetItem>> LoadFromParquetAsync(string parquetPath, string outputFolder = "parquet_extracted")
         {

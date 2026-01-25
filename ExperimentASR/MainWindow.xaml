@@ -5,11 +5,15 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:SpeechMaster"
         xmlns:ui="http://schemas.modernwpf.com/2019"
-        xmlns:ui1="http://schemas.lepo.co/wpfui/2022/xaml" xmlns:Models="clr-namespace:SpeechMaster.Models" x:Class="SpeechMaster.MainWindow"
+        xmlns:ui1="http://schemas.lepo.co/wpfui/2022/xaml" 
+		xmlns:Models="clr-namespace:SpeechMaster.Models" 
+		x:Class="SpeechMaster.MainWindow"
         mc:Ignorable="d"
         ui:WindowHelper.UseModernWindowStyle="True"
         TextOptions.TextFormattingMode="Display" 
-        Title="Transcription" Height="720" Width="1280" Loaded="Window_Loaded" Closing="Window_Closing">
+        Title="Transcription" Height="720" Width="1280" 
+		KeyboardNavigation.TabNavigation="Cycle"
+		Loaded="Window_Loaded" Closing="Window_Closing">
 	<Window.Resources>
 		<SolidColorBrush x:Key="AccentBrush" Color="#0057B7"/>
 		<SolidColorBrush x:Key="AccentLightBrush" Color="#FFD700"/>
@@ -60,7 +64,7 @@
 
 		<Menu DockPanel.Dock="Top">
 			<MenuItem Header="_File">
-				<MenuItem Header="_Import" />
+				<MenuItem Header="_Import" Click="BtnSelectFile_Click" />
 				<Separator />
 				<MenuItem Header="_Exit" Click="MenuExit_Click" />
 			</MenuItem>
@@ -77,65 +81,68 @@
 			</MenuItem>
 		</Menu>
 
-        <Grid Margin="10">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="350"/>
-                <ColumnDefinition Width="*"/>
-            </Grid.ColumnDefinitions>
+		<Grid Margin="10">
+			<Grid.ColumnDefinitions>
+				<ColumnDefinition Width="350"/>
+				<ColumnDefinition Width="*"/>
+			</Grid.ColumnDefinitions>
 
-            <Border Grid.Column="0" 
+			<Border Grid.Column="0" 
             BorderBrush="Gray" 
             BorderThickness="1"
             CornerRadius="8" 
             Padding="16" 
             Margin="0,0,10,0">
 
-                <StackPanel x:Name="panelTranscriptOptions" VerticalAlignment="Center">
-                    <Button x:Name="btnStartTranscribe" Height="120" Width="120" Margin="0,10,0,0"
+				<StackPanel x:Name="panelTranscriptOptions" VerticalAlignment="Center">
+					<Button x:Name="btnStartTranscribe" Height="120" 
+					Width="120" Margin="0,10,0,0"
                     Style="{StaticResource RoundButtonStyle}"
-                    Background="{StaticResource AccentBrush}"
+                    Background="DarkBlue"
                     Foreground="White" FontSize="48" FontWeight="Bold"
                     Content="▶" 
+					TabIndex="0"
                     Click="BtnStartTranscribe_Click"/>
 
-                    <TextBlock x:Name="blockStartTranscription" Text="Start transcription" 
+					<TextBlock x:Name="blockStartTranscription" Text="Start transcription" 
                        HorizontalAlignment="Center" FontSize="16" Margin="0,10,0,10" FontWeight="Bold"/>
 
-                    <TextBlock x:Name="blockImportLocalFile" 
+					<TextBlock x:Name="blockImportLocalFile" 
                        Margin="0,10,0,5" Text="Import local file"/>
 
-                    <Grid>
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="Auto"/>
-                        </Grid.ColumnDefinitions>
-                        <TextBox x:Name="txtAudioFilePath" IsReadOnly="True" 
+					<Grid>
+						<Grid.ColumnDefinitions>
+							<ColumnDefinition Width="*"/>
+							<ColumnDefinition Width="Auto"/>
+						</Grid.ColumnDefinitions>
+						<TextBox x:Name="txtAudioFilePath" IsReadOnly="True" 
 						VerticalContentAlignment="Center"/>
-                        <Button x:Name="btnFileSelect" Grid.Column="1" 
+						<Button x:Name="btnFileSelect" Grid.Column="1" TabIndex="1"
 						Content="📁" Width="40" Margin="5,0,0,0" Click="BtnSelectFile_Click"/>
-                    </Grid>
+					</Grid>
 
-                    <Separator Height="20"/>
+					<Separator Height="20"/>
 
-                    <Grid Margin="0,10,0,0">
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="Auto"/>
-                            <RowDefinition Height="*"/>
-                        </Grid.RowDefinitions>
+					<Grid Margin="0,10,0,0">
+						<Grid.RowDefinitions>
+							<RowDefinition Height="Auto"/>
+							<RowDefinition Height="*"/>
+						</Grid.RowDefinitions>
 
-                        <TextBlock x:Name="blockQueue" Text="Transcription Queue" Margin="0,0,0,10" Grid.Row="0" FontSize="16"/>
+						<TextBlock x:Name="blockQueue" Text="Transcription Queue" Margin="0,0,0,10" Grid.Row="0" FontSize="16"/>
 
-                        <DataGrid x:Name="QueueGrid" Grid.Row="1" AutoGenerateColumns="False" 
-                          IsReadOnly="True" Height="200"
+						<DataGrid x:Name="QueueGrid" Grid.Row="1" AutoGenerateColumns="False" 
+                          IsReadOnly="True" Height="200" 
+						  SelectionChanged="QueueGrid_SelectionChanged"
                           ToolTip="Displays current audio files queued for transcription">
-                            <DataGrid.Columns>
-                                <DataGridTextColumn Header="File Name" Binding="{Binding FileName}" Width="*"/>
-                                <DataGridTextColumn Header="Status" Binding="{Binding Status}" Width="80"/>
-                            </DataGrid.Columns>
-                        </DataGrid>
-                    </Grid>
-                </StackPanel>
-            </Border>
+							<DataGrid.Columns>
+								<DataGridTextColumn Header="File Name" Binding="{Binding FileName}" Width="*"/>
+								<DataGridTextColumn Header="Status" Binding="{Binding Status}" Width="80"/>
+							</DataGrid.Columns>
+						</DataGrid>
+					</Grid>
+				</StackPanel>
+			</Border>
 
 			<Grid Grid.Column="1" Margin="10,0,0,0">
 				<Grid.RowDefinitions>
@@ -144,36 +151,11 @@
 					<RowDefinition Height="2*" MinHeight="150"/>
 				</Grid.RowDefinitions>
 
-				<Border Grid.Row="0" BorderBrush="Gray" BorderThickness="1" CornerRadius="8" Background="White">
-					<Grid>
-						<Grid.RowDefinitions>
-							<RowDefinition Height="Auto"/>
-							<RowDefinition Height="*"/>
-						</Grid.RowDefinitions>
-
-						<TextBlock Text="Processed History" FontWeight="Bold" Margin="10,10,0,5"/>
-
-						<DataGrid x:Name="HistoryGrid" Grid.Row="1" 
-                                  AutoGenerateColumns="False" 
-                                  IsReadOnly="True" 
-                                  HeadersVisibility="Column"
-                                  Background="Transparent"
-                                  BorderThickness="0"
-                                  SelectionMode="Single"
-                                  SelectionChanged="HistoryGrid_SelectionChanged">
-							<DataGrid.Columns>
-								<DataGridTextColumn Header="Time" Binding="{Binding DisplayDate}" Width="120"/>
-								<DataGridTextColumn Header="File Name" Binding="{Binding FileName}" Width="*"/>
-							</DataGrid.Columns>
-						</DataGrid>
-					</Grid>
-				</Border>
-
 				<GridSplitter Grid.Row="1" Height="5" HorizontalAlignment="Stretch" VerticalAlignment="Center" Background="#F0F0F0" ShowsPreview="True"/>
 
-				<Border Grid.Row="2" x:Name="borderTranscriptOutput" 
+				<Border x:Name="borderTranscriptOutput" 
                         BorderBrush="Gray" BorderThickness="1" CornerRadius="8" 
-                        Padding="10" Background="White">
+                        Padding="10" Background="White" Grid.RowSpan="3">
 					<Grid>
 						<Grid.RowDefinitions>
 							<RowDefinition Height="*"/>
@@ -200,5 +182,5 @@
 				</Border>
 			</Grid>
 		</Grid>
-    </DockPanel>
+	</DockPanel>
 </Window>
